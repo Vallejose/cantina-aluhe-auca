@@ -1,6 +1,6 @@
-/* Fondo de caja, retiros de efectivo y lo que debería haber en la caja. */
-const PantallaCaja = {
-	titulo: 'Caja',
+/* Movimientos de efectivo: fondo de caja, retiros y lo que debería haber en la caja. */
+const PantallaMovimientos = {
+	titulo: 'Movimientos',
 	icono: '💵',
 
 	async dibujar(c) {
@@ -9,7 +9,7 @@ const PantallaCaja = {
 
 		c.innerHTML = `
 			<header class="cabecera">
-				<h1>Caja</h1>
+				<h1>Movimientos</h1>
 				<div class="acciones">
 					<button id="fondo">Registrar fondo de caja</button>
 					<button id="retiro" class="principal">Registrar retiro</button>

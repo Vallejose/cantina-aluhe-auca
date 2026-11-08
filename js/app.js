@@ -8,7 +8,7 @@
 const PANTALLAS = {
 	vender: PantallaVender,
 	pedidos: PantallaPedidos,
-	caja: PantallaCaja,
+	movimientos: PantallaMovimientos,
 	cierre: PantallaCierre,
 	articulos: PantallaArticulos,
 	medios: PantallaMedios,
@@ -16,7 +16,7 @@ const PANTALLAS = {
 };
 
 /** Menú: el trabajo diario siempre a la vista; los ajustes, dentro de un desplegable */
-const MENU_DIARIO = ['vender', 'pedidos', 'caja', 'cierre'];
+const MENU_DIARIO = ['vender', 'pedidos', 'movimientos', 'cierre'];
 const MENU_AJUSTES = ['articulos', 'medios', 'configuracion'];
 
 const App = {

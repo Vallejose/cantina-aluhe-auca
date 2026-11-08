@@ -414,27 +414,6 @@ const Datos = (() => {
 		}, null, 2);
 	}
 
-	/**
-	 * Planilla de ventas para Excel: UNA FILA POR TICKET, solo de los pedidos
-	 * válidos (los anulados no aparecen). Separado por ";" y con coma decimal,
-	 * que es lo que espera Excel en español.
-	 *
-	 * Columnas: Pedido, Fecha, Hora, Caja, Medio de pago, Venta.
-	 * "Venta" es lo cobrado en el ticket (los sin cargo van en 0).
-	 */
-	async function exportarCSV() {
-		const pedidos = (await DB.todos('pedidos')).filter(p => !p.anulado).sort((a, b) => a.numero - b.numero);
-		const monto = c => (c / 100).toFixed(2).replace('.', ',');
-		const celda = t => /[;"\n]/.test(String(t)) ? `"${String(t).replace(/"/g, '""')}"` : String(t);
-		const filas = [['Pedido', 'Fecha', 'Hora', 'Caja', 'Medio de pago', 'Venta']];
-		for (const p of pedidos) {
-			const d = new Date(p.fecha);
-			const fecha = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
-			filas.push([p.numero, fecha, Util.hora(p.fecha), p.equipo, p.medio.nombre, monto(p.cobrado)]);
-		}
-		return '﻿' + filas.map(f => f.map(celda).join(';')).join('\r\n');
-	}
-
 	// ------------------------------------------------------- Respaldo completo
 
 	const ALMACENES = ['articulos', 'mediosPago', 'pedidos', 'movimientos'];
@@ -534,7 +513,7 @@ const Datos = (() => {
 		AVISO_NUMERACION, estadoNumeracion, confirmarPedido, listarPedidos, obtenerPedido, anularPedido,
 		resumenLineas, cantidadArticulos,
 		listarMovimientos, registrarMovimiento, anularMovimiento, resumenCaja,
-		calcularCierre, exportarCierre, exportarCSV,
+		calcularCierre, exportarCierre,
 		exportarRespaldo, leerRespaldo, restaurarRespaldo, ultimoRespaldo,
 		exportarCarta, leerCarta, importarCarta,
 	};

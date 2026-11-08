@@ -2,7 +2,7 @@
 
 App para tomar pedidos, cobrar, generar ticket y comanda, y cerrar la caja.
 Es una PWA: funciona en Windows y Android, se instala desde el navegador y
-**cada equipo guarda sus propios datos**, sin internet ni servidor.
+**cada caja (dispositivo) guarda sus propios datos**, sin internet ni servidor.
 
 ![Pantalla de venta](docs/capturas/02-vender.png)
 
@@ -13,20 +13,19 @@ Es una PWA: funciona en Windows y Android, se instala desde el navegador y
 
 | Etapa | Contenido | Estado |
 |---|---|---|
-| 1 | Base, configuración del equipo, artículos, medios de pago | ✅ Lista |
+| 1 | Base, configuración de la caja, artículos, medios de pago | ✅ Lista |
 | 2 | Vender, cobrar, ticket, comanda, pedidos y anulación | ✅ Lista |
-| 3 | Caja (fondo y retiros), cierre, exportación y respaldo | ✅ Lista |
+| 3 | Movimientos (fondo y retiros), cierre, exportaciones y respaldo | ✅ Lista |
 | 4 | Prueba instalada en Windows y Android | Pendiente |
 
 ## Pendientes para más adelante
 
 - Dónde publicarla (necesita `https` para instalarla en Android; opción: GitHub Pages).
 - Impresión de tickets, comandas y comprobantes de retiro.
-- Consolidar los cierres exportados de todos los equipos en un documento único.
+- Consolidar los cierres exportados de todas las cajas en un documento único.
 - Comandas divididas por sector (cocina, barra).
 - **Formato de importación de artículos** (por ejemplo desde Excel o CSV).
   Hoy "Importar carta" solo acepta el `.json` que genera "Exportar carta".
-- **Pestaña Exportaciones en el Cierre** (en diseño): Excel con 3 pestañas, tablas CSV por separado, JSON y filtros.
 
 ## Probarla en esta PC
 
@@ -43,22 +42,32 @@ Para instalarla en Android hace falta publicarla en una dirección `https`
 
 ## Numeración
 
-- Cada equipo elige su número la primera vez que se abre la app.
-- **Equipos 1 a 7: venta.** El equipo 2 numera del 2000 al 2999, y así.
+Cada dispositivo que vende es una **caja**, y elige su número la primera vez que se abre la app.
+
+- **Cajas 1 a 7: venta.** La caja 2 numera del 2000 al 2999, y así.
   Sus datos nunca se borran.
-- **Equipos 8 y 9: prueba.** Muestran una franja amarilla "MODO PRUEBA" y se
-  pueden resetear desde Configuración (borra pedidos y caja; mantiene la carta).
+- **Cajas 8 y 9: prueba.** Muestran una franja amarilla "MODO PRUEBA" y se
+  pueden resetear desde Ajustes › Configuración (borra pedidos y movimientos; mantiene la carta).
 
 ## Archivos que genera
 
-| Botón | Archivo | Para qué |
-|---|---|---|
-| Artículos › Exportar carta | `carta-equipoN-fecha.json` | Pasar la carta a otros equipos |
-| Cierre › Exportar cierre para consolidar | `cierre-equipoN-fecha.json` | Juntar después los cierres de todos los equipos |
-| Cierre › Exportar a Excel (CSV) | `ventas-equipoN-fecha.csv` | Ventas en Excel, una fila por ticket: pedido, fecha, hora, equipo, medio de pago y venta (sin los anulados) |
-| Configuración › Exportar respaldo completo | `respaldo-equipoN-fecha-hora.json` | Recuperar todo si el dispositivo falla |
+Casi todo sale de **Cierre › Exportaciones**. Las planillas respetan los filtros
+(fecha y hora, números de pedido, medio de pago, anulados); los JSON siempre son completos.
 
-Los archivos de los equipos de prueba llevan `-PRUEBA` en el nombre.
+| Archivo | Contenido |
+|---|---|
+| `ventas-cajaN-fecha.xlsx` | Excel con 3 pestañas: Ventas por ticket, Por medio de pago (con total) y Por artículo (con total) |
+| `ventas-por-ticket-cajaN-fecha.csv` | Pedido, Fecha, Hora, Caja, Medio de pago, Venta |
+| `por-medio-de-pago-cajaN-fecha.csv` | Medio, Pedidos, Monto |
+| `por-articulo-cajaN-fecha.csv` | Artículo, Categoría, Cantidad, Ventas |
+| `movimientos-cajaN-fecha.csv` | Hora, Tipo, Comprobante, Monto, Motivo, Quién |
+| `anulados-cajaN-fecha.csv` | Pedido, Hora, Anulado a las, Medio, Monto |
+| `cierre-cajaN-fecha.json` | Resumen y detalle completo (con costo y ganancia), para consolidar todas las cajas |
+| `carta-cajaN-fecha.json` | Artículos y medios de pago (también desde Artículos › Exportar carta) |
+| `respaldo-cajaN-fecha-hora.json` | Todo el dispositivo, desde Ajustes › Configuración, para restaurarlo |
+
+Los CSV van separados por `;` y con coma decimal (Excel en español). Los archivos de las
+cajas de prueba llevan `-PRUEBA` en el nombre. Costo y ganancia no salen en las planillas.
 
 ## Cómo está hecha
 
@@ -73,6 +82,8 @@ js/datos.js              reglas de negocio (validaciones, carta, reseteo)
 js/app.js                arranque y menú
 js/pantallas/*.js        una pantalla por archivo
 js/documentos.js         ticket, comanda y comprobante de retiro
+js/exportaciones.js      tablas de exportación, CSV y Excel
+js/xlsx.js               generador de archivos Excel sin librerías
 sw.js                    permite abrirla sin internet
 docs/                    esquema del programa y capturas
 manifest.webmanifest     nombre e ícono al instalarla

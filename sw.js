@@ -6,7 +6,7 @@
  * Con conexión siempre usa los archivos nuevos. Si se agrega un archivo a la
  * app, sumarlo a ARCHIVOS y cambiar VERSION para que quede disponible sin internet.
  */
-const VERSION = 'cantina-v5';
+const VERSION = 'cantina-v6';
 
 const ARCHIVOS = [
 	'./',
@@ -17,10 +17,12 @@ const ARCHIVOS = [
 	'js/db.js',
 	'js/datos.js',
 	'js/documentos.js',
+	'js/xlsx.js',
+	'js/exportaciones.js',
 	'js/app.js',
 	'js/pantallas/vender.js',
 	'js/pantallas/pedidos.js',
-	'js/pantallas/caja.js',
+	'js/pantallas/movimientos.js',
 	'js/pantallas/cierre.js',
 	'js/pantallas/configuracion.js',
 	'js/pantallas/articulos.js',

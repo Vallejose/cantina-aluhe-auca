@@ -23,9 +23,11 @@ const PantallaCierre = {
 		return `<b>${Util.fechaCorta(desde)}</b> a <b>${Util.fechaCorta(hasta)}</b>`;
 	},
 
+	pestana: 'resumen',                    // resumen | exportaciones
+	filtros: null,                         // se conservan mientras la app está abierta
+
 	async dibujar(c) {
 		const k = await Datos.calcularCierre();
-		const d = Util.dinero;
 
 		const rango = k.desdeNumero == null
 			? 'Todavía no hay pedidos'
@@ -34,12 +36,29 @@ const PantallaCierre = {
 		c.innerHTML = `
 			<header class="cabecera">
 				<div><h1>Cierre</h1><span class="suave">${rango}</span></div>
-				<div class="acciones">
-					<button id="csv" ${k.desdeNumero == null ? 'disabled' : ''}>Exportar a Excel (CSV)</button>
-					<button id="exportar" class="principal">Exportar cierre para consolidar</button>
-				</div>
 			</header>
+			<div class="pestanas" role="tablist" aria-label="Secciones del cierre">
+				<button role="tab" id="tab-resumen" aria-controls="panel-cierre">Resumen</button>
+				<button role="tab" id="tab-exportaciones" aria-controls="panel-cierre">Exportaciones</button>
+			</div>
+			<div id="panel-cierre" role="tabpanel"></div>`;
 
+		const mostrar = async () => {
+			c.querySelectorAll('[role=tab]').forEach(t => t.setAttribute('aria-selected', t.id === 'tab-' + this.pestana));
+			const panel = c.querySelector('#panel-cierre');
+			if (this.pestana === 'resumen') this.dibujarResumen(panel, k);
+			else await this.dibujarExportaciones(panel, k);
+		};
+		c.querySelector('#tab-resumen').onclick = () => { this.pestana = 'resumen'; mostrar(); };
+		c.querySelector('#tab-exportaciones').onclick = () => { this.pestana = 'exportaciones'; mostrar(); };
+		await mostrar();
+	},
+
+	// ---------------------------------------------------------------- Resumen
+
+	dibujarResumen(panel, k) {
+		const d = Util.dinero;
+		panel.innerHTML = `
 			<div class="indicadores">
 				<div class="indicador"><span>Ventas</span><b>${d(k.ventas)}</b><small>${k.pedidosValidos} pedidos válidos</small></div>
 				<div class="indicador"><span>Costo</span><b>${d(k.costo)}</b><small>incluye lo entregado sin cargo</small></div>
@@ -94,15 +113,151 @@ const PantallaCierre = {
 						La cantidad incluye lo entregado sin cargo.</p>
 				</section>
 			</div>`;
+	},
 
-		const nombreArchivo = ext => `cierre-caja${k.equipo}${k.prueba ? '-PRUEBA' : ''}-${Util.hoy()}.${ext}`;
-		c.querySelector('#exportar').onclick = async () => {
-			Util.descargar(nombreArchivo('json'), await Datos.exportarCierre());
+	// ----------------------------------------------------------- Exportaciones
+
+	async dibujarExportaciones(panel, k) {
+		this.filtros ??= { ...Exportaciones.FILTROS_INICIALES };
+		const f = this.filtros;
+		const inicial = await Exportaciones.tablas(f);
+
+		// Nombre de archivo: ventas-caja2-2026-11-08.xlsx (las cajas de prueba llevan -PRUEBA)
+		const archivo = (nombre, ext) => `${nombre}-caja${k.equipo}${k.prueba ? '-PRUEBA' : ''}-${Util.hoy()}.${ext}`;
+
+		const CSV = [
+			{ clave: 'ventasPorTicket', nombre: 'ventas-por-ticket', descripcion: 'Una fila por ticket, con lo cobrado.' },
+			{ clave: 'porMedio', nombre: 'por-medio-de-pago', descripcion: 'Pedidos y monto de cada medio de pago.' },
+			{ clave: 'porArticulo', nombre: 'por-articulo', descripcion: 'Cuánto se vendió de cada artículo.' },
+			{ clave: 'movimientos', nombre: 'movimientos', descripcion: 'Fondo de caja y retiros con su comprobante.' },
+			{ clave: 'anulados', nombre: 'anulados', descripcion: 'Qué se anuló, cuándo y por cuánto.' },
+		];
+		const chips = tabla => tabla.columnas.map(c => `<span>${Util.esc(c.titulo)}</span>`).join('');
+
+		panel.innerHTML = `
+			<section class="tarjeta filtros">
+				<div class="filtros-cabecera"><h2>Filtros</h2><button class="enlace" id="quitar-filtros">Quitar filtros</button></div>
+				<div class="grilla-filtros">
+					<label>Desde (fecha y hora)<input type="datetime-local" name="desde" value="${f.desde}"></label>
+					<label>Hasta (fecha y hora)<input type="datetime-local" name="hasta" value="${f.hasta}"></label>
+					<label>Desde el pedido<input name="numeroDesde" inputmode="numeric" value="${f.numeroDesde}" placeholder="${k.desdeNumero ?? ''}"></label>
+					<label>Hasta el pedido<input name="numeroHasta" inputmode="numeric" value="${f.numeroHasta}" placeholder="${k.hastaNumero ?? ''}"></label>
+					<label>Medio de pago<select name="medio">
+						<option value="">Todos</option>
+						${inicial.mediosDisponibles.map(m => `<option ${f.medio === m ? 'selected' : ''}>${Util.esc(m)}</option>`).join('')}
+					</select></label>
+					<label>Pedidos anulados<select name="anulados">
+						<option value="no" ${f.anulados === 'no' ? 'selected' : ''}>No incluir</option>
+						<option value="si" ${f.anulados === 'si' ? 'selected' : ''}>Incluir</option>
+						<option value="solo" ${f.anulados === 'solo' ? 'selected' : ''}>Solo anulados</option>
+					</select></label>
+				</div>
+				<div class="alerta" id="resumen-filtros"></div>
+			</section>
+
+			<section class="tarjeta exportacion-excel">
+				<div class="excel-texto">
+					<span class="etiqueta sincargo">EXCEL · 3 PESTAÑAS</span>
+					<h2>Planilla de ventas (.xlsx)</h2>
+					<p class="ayuda sin-margen">Un solo archivo de Excel con tres pestañas. Respeta los filtros.</p>
+					<div class="pestanas-excel">
+						<div><b>Ventas por ticket</b><div class="columnas-chips">${chips(inicial.ventasPorTicket)}</div></div>
+						<div><b>Por medio de pago</b><div class="columnas-chips">${chips(inicial.porMedio)}<span>+ Total</span></div></div>
+						<div><b>Por artículo</b><div class="columnas-chips">${chips(inicial.porArticulo)}<span>+ Total</span></div></div>
+					</div>
+				</div>
+				<div class="excel-accion">
+					<button class="principal grande" id="descargar-excel">Descargar Excel</button>
+					<span class="nombre-archivo">${archivo('ventas', 'xlsx')}</span>
+				</div>
+			</section>
+
+			<details class="tarjeta sin-relleno lista-csv">
+				<summary>Tablas por separado (CSV) <span class="suave">· una tabla por archivo, respetan los filtros</span></summary>
+				${CSV.map(x => `
+					<div class="fila-csv">
+						<div class="fila-csv-texto">
+							<b>${Util.esc(inicial[x.clave].nombre)}</b>
+							<span class="ayuda sin-margen">${x.descripcion}</span>
+							<div class="columnas-chips">${chips(inicial[x.clave])}</div>
+						</div>
+						<span class="nombre-archivo">${archivo(x.nombre, 'csv')}</span>
+						<button data-csv="${x.clave}">Descargar CSV</button>
+					</div>`).join('')}
+			</details>
+
+			<h2 class="subtitulo">Datos (JSON) <span class="suave">· siempre completos, sin filtros</span></h2>
+			<div class="grilla-json">
+				<div class="tarjeta">
+					<h3>Cierre para consolidar</h3>
+					<p class="ayuda sin-margen">Resumen y detalle de toda la caja, para juntar después todas las cajas. Incluye costo y ganancia.</p>
+					<div class="pie-json"><span class="nombre-archivo">${archivo('cierre', 'json')}</span><button id="json-cierre">Descargar JSON</button></div>
+				</div>
+				<div class="tarjeta">
+					<h3>Carta</h3>
+					<p class="ayuda sin-margen">Artículos y medios de pago, para cargar en otras cajas.</p>
+					<div class="pie-json"><span class="nombre-archivo">${archivo('carta', 'json')}</span><button id="json-carta">Descargar JSON</button></div>
+				</div>
+			</div>
+			<p class="ayuda">CSV: separado por “;” y con coma decimal, listo para Excel en español. Costo y ganancia no salen en las planillas, solo en el JSON para consolidar.</p>`;
+
+		// --- Filtros: se aplican al escribir, y el aviso dice cuánto se va a exportar
+		const leerFiltros = () => {
+			panel.querySelectorAll('.grilla-filtros [name]').forEach(campo => { f[campo.name] = campo.value.trim(); });
+		};
+		const actualizarResumen = async () => {
+			const aviso = panel.querySelector('#resumen-filtros');
+			const numeroInvalido = ['numeroDesde', 'numeroHasta'].some(n => f[n] !== '' && !/^\d+$/.test(f[n]));
+			if (numeroInvalido) {
+				aviso.className = 'alerta peligro';
+				aviso.textContent = 'Los números de pedido tienen que ser números enteros (ej.: 2000).';
+				return;
+			}
+			const t = await Exportaciones.tablas(f);
+			aviso.className = 'alerta';
+			aviso.innerHTML = `Con estos filtros se exportan <b>${t.cantidadPedidos}</b> pedido${t.cantidadPedidos === 1 ? '' : 's'} y
+				<b>${t.cantidadMovimientos}</b> movimiento${t.cantidadMovimientos === 1 ? '' : 's'} de efectivo.`;
+		};
+		panel.querySelectorAll('.grilla-filtros [name]').forEach(campo => {
+			campo.oninput = campo.onchange = () => { leerFiltros(); actualizarResumen(); };
+		});
+		panel.querySelector('#quitar-filtros').onclick = () => {
+			this.filtros = { ...Exportaciones.FILTROS_INICIALES };
+			this.dibujarExportaciones(panel, k);
+		};
+		actualizarResumen();
+
+		// --- Descargas
+		const tablasActuales = async () => {
+			leerFiltros();
+			if (['numeroDesde', 'numeroHasta'].some(n => f[n] !== '' && !/^\d+$/.test(f[n]))) {
+				Util.avisar('Revisá los números de pedido en los filtros', 'error');
+				return null;
+			}
+			return Exportaciones.tablas(f);
+		};
+
+		panel.querySelector('#descargar-excel').onclick = async () => {
+			const t = await tablasActuales();
+			if (!t) return;
+			Util.descargar(archivo('ventas', 'xlsx'), Exportaciones.excelVentas(t),
+				'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+			Util.avisar('Excel descargado');
+		};
+		panel.querySelectorAll('[data-csv]').forEach(b => b.onclick = async () => {
+			const t = await tablasActuales();
+			if (!t) return;
+			const x = CSV.find(y => y.clave === b.dataset.csv);
+			Util.descargar(archivo(x.nombre, 'csv'), Exportaciones.csv(t[x.clave]), 'text/csv;charset=utf-8');
+			Util.avisar(`${t[x.clave].nombre} descargado`);
+		});
+		panel.querySelector('#json-cierre').onclick = async () => {
+			Util.descargar(archivo('cierre', 'json'), await Datos.exportarCierre());
 			Util.avisar('Cierre exportado');
 		};
-		c.querySelector('#csv').onclick = async () => {
-			Util.descargar(nombreArchivo('csv').replace('cierre', 'ventas'), await Datos.exportarCSV(), 'text/csv;charset=utf-8');
-			Util.avisar('Detalle de ventas exportado');
+		panel.querySelector('#json-carta').onclick = async () => {
+			Util.descargar(archivo('carta', 'json'), await Datos.exportarCarta());
+			Util.avisar('Carta exportada');
 		};
 	},
 };
