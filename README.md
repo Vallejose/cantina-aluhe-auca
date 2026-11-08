@@ -26,7 +26,7 @@ Es una PWA: funciona en Windows y Android, se instala desde el navegador y
 - Comandas divididas por sector (cocina, barra).
 - **Formato de importación de artículos** (por ejemplo desde Excel o CSV).
   Hoy "Importar carta" solo acepta el `.json` que genera "Exportar carta".
-- **Otras exportaciones** (a definir cuáles y con qué columnas).
+- **Pestaña Exportaciones en el Cierre** (en diseño): Excel con 3 pestañas, tablas CSV por separado, JSON y filtros.
 
 ## Probarla en esta PC
 

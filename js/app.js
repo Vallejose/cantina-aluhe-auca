@@ -15,8 +15,9 @@ const PANTALLAS = {
 	configuracion: PantallaConfiguracion,
 };
 
-/** Separador visual en el menú entre "trabajo diario" y "ajustes" */
-const MENU = ['vender', 'pedidos', 'caja', 'cierre', '-', 'articulos', 'medios', 'configuracion'];
+/** Menú: el trabajo diario siempre a la vista; los ajustes, dentro de un desplegable */
+const MENU_DIARIO = ['vender', 'pedidos', 'caja', 'cierre'];
+const MENU_AJUSTES = ['articulos', 'medios', 'configuracion'];
 
 const App = {
 
@@ -56,19 +57,26 @@ const App = {
 	async dibujarMenu(actual, configurado) {
 		const cfg = await Datos.configuracion();
 		const menu = document.getElementById('menu');
-		const items = MENU.map(clave => {
-			if (clave === '-') return '<hr>';
+		const enlace = clave => {
 			const p = PANTALLAS[clave];
 			const clase = (clave === actual ? 'activo' : '') + (!configurado && clave !== 'configuracion' ? ' bloqueado' : '');
 			return `<a href="#${clave}" class="${clase}"><span class="icono">${p.icono}</span><span>${p.titulo}</span></a>`;
-		}).join('');
+		};
+
+		// Los ajustes quedan plegados, salvo que se esté en uno de ellos o falte configurar
+		const ajustesAbiertos = MENU_AJUSTES.includes(actual) || !configurado;
 
 		menu.innerHTML = `
 			<div class="marca">
 				<div class="marca-nombre">${Util.esc(cfg.nombreCantina || Datos.NOMBRE_POR_DEFECTO)}</div>
 				<div class="marca-equipo">${cfg.equipo ? 'Equipo ' + cfg.equipo + (cfg.prueba ? ' · prueba' : '') : 'Sin configurar'}</div>
 			</div>
-			${items}`;
+			${MENU_DIARIO.map(enlace).join('')}
+			<hr>
+			<details class="ajustes" ${ajustesAbiertos ? 'open' : ''}>
+				<summary><span class="icono">🛠️</span><span>Ajustes</span></summary>
+				${MENU_AJUSTES.map(enlace).join('')}
+			</details>`;
 
 		// En los equipos de prueba, una franja amarilla arriba de todo
 		const franja = document.getElementById('franja-prueba');

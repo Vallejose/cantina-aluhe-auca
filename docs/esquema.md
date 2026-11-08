@@ -66,6 +66,8 @@ Elegir artículos → observaciones → cobrar (un medio de pago) → **ticket +
 - **Comanda:** una por pedido, sin sectores y sin estados.
 - **Sin** descuentos, promociones, control de stock ni fotos.
 - **Pantallas:** notebook y tablet en horizontal.
+- **Menú:** Vender, Pedidos, Caja y Cierre siempre a la vista; Artículos, Medios de pago y Configuración dentro del desplegable “Ajustes”.
+- **Colores:** azul marino del grupo (apenas más claro) y amarillo.
 
 ## Numeración de tickets
 
@@ -103,7 +105,7 @@ se comuniquen. Avisa cuando quedan pocos números.
 - **Consolidación:** juntar los cierres exportados de todos los equipos en un documento único.
 - **Comandas por sector** (cocina, barra), si hace falta.
 - **Formato de importación de artículos** (por ejemplo desde Excel o CSV).
-- **Otras exportaciones** (a definir cuáles y con qué columnas).
+- **Pestaña Exportaciones en el Cierre** (en diseño): Excel `.xlsx` con 3 pestañas (ventas por ticket, por medio de pago, por artículo), un desplegable con las tablas en CSV por separado, JSON para consolidar y filtros (horario, números de pedido, medio de pago, anulados).
 
 ## Etapas
 
