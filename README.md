@@ -51,8 +51,8 @@ Cada dispositivo que vende es una **caja**, y elige su número la primera vez qu
 
 ## Archivos que genera
 
-Casi todo sale de **Cierre › Exportaciones**. Las planillas respetan los filtros
-(fecha y hora, números de pedido, medio de pago, anulados); los JSON siempre son completos.
+Casi todo sale de **Cierre › Exportaciones**. Exporta todo lo de la caja, sin los
+pedidos anulados (que tienen su propia tabla).
 
 | Archivo | Contenido |
 |---|---|
@@ -86,6 +86,7 @@ js/exportaciones.js      tablas de exportación, CSV y Excel
 js/xlsx.js               generador de archivos Excel sin librerías
 sw.js                    permite abrirla sin internet
 docs/                    esquema del programa y capturas
+borradores/              versiones guardadas que la app no usa (por ejemplo, exportaciones con filtros)
 manifest.webmanifest     nombre e ícono al instalarla
 ```
 

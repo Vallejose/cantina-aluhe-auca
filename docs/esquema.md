@@ -25,7 +25,7 @@ Elegir artículos → observaciones → cobrar (un medio de pago) → **ticket +
 | 5 | Pedidos | Lista con búsqueda y filtros, volver a ver ticket o comanda, anular |
 | 6 | Movimientos | Fondo de caja, retiros con comprobante numerado, lo que debería haber en la caja |
 | 7 | Cierre › Resumen | Ventas, costo y ganancia; por medio de pago y por artículo; arqueo de efectivo |
-| 8 | Cierre › Exportaciones | Filtros, Excel con 3 pestañas, 5 tablas CSV y 2 archivos JSON |
+| 8 | Cierre › Exportaciones | Excel con 3 pestañas, 5 tablas CSV y 2 archivos JSON |
 | 9 | Artículos | Nombre, categoría y precio (obligatorios), costo opcional; ocultar; exportar e importar la carta |
 | 10 | Medios de pago | Efectivo (calcula vuelto), otros, y sin cargo (no suma dinero) |
 
@@ -100,7 +100,7 @@ se comuniquen. Avisa cuando quedan pocos números.
 
 ## Exportaciones (Cierre › Exportaciones)
 
-**Filtros** (se aplican a las planillas): desde y hasta fecha y hora, desde y hasta número de pedido, medio de pago, y pedidos anulados (no incluir, incluir o solo anulados).
+Exporta todo lo de la caja, sin los pedidos anulados (que tienen su propia tabla). Sin filtros: la versión con filtros quedó en `borradores/exportaciones-con-filtros/`.
 
 **Excel (.xlsx), 3 pestañas**
 

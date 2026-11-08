@@ -23,8 +23,7 @@ const PantallaCierre = {
 		return `<b>${Util.fechaCorta(desde)}</b> a <b>${Util.fechaCorta(hasta)}</b>`;
 	},
 
-	pestana: 'resumen',                    // resumen | exportaciones
-	filtros: null,                         // se conservan mientras la app está abierta
+	pestana: 'resumen', // resumen | exportaciones
 
 	async dibujar(c) {
 		const k = await Datos.calcularCierre();
@@ -116,148 +115,90 @@ const PantallaCierre = {
 	},
 
 	// ----------------------------------------------------------- Exportaciones
+	// Versión simple, sin filtros: exporta todo (sin los pedidos anulados).
+	// La versión con filtros quedó guardada en borradores/exportaciones-con-filtros/.
 
 	async dibujarExportaciones(panel, k) {
-		this.filtros ??= { ...Exportaciones.FILTROS_INICIALES };
-		const f = this.filtros;
-		const inicial = await Exportaciones.tablas(f);
-
-		// Nombre de archivo: ventas-caja2-2026-11-08.xlsx (las cajas de prueba llevan -PRUEBA)
+		const t = await Exportaciones.tablas();
 		const archivo = (nombre, ext) => `${nombre}-caja${k.equipo}${k.prueba ? '-PRUEBA' : ''}-${Util.hoy()}.${ext}`;
 
 		const CSV = [
-			{ clave: 'ventasPorTicket', nombre: 'ventas-por-ticket', descripcion: 'Una fila por ticket, con lo cobrado.' },
-			{ clave: 'porMedio', nombre: 'por-medio-de-pago', descripcion: 'Pedidos y monto de cada medio de pago.' },
-			{ clave: 'porArticulo', nombre: 'por-articulo', descripcion: 'Cuánto se vendió de cada artículo.' },
-			{ clave: 'movimientos', nombre: 'movimientos', descripcion: 'Fondo de caja y retiros con su comprobante.' },
-			{ clave: 'anulados', nombre: 'anulados', descripcion: 'Qué se anuló, cuándo y por cuánto.' },
+			{ clave: 'ventasPorTicket', nombre: 'ventas-por-ticket', titulo: 'Tickets', icono: 'ticket' },
+			{ clave: 'porMedio', nombre: 'por-medio-de-pago', titulo: 'Medios de pago', icono: 'medios' },
+			{ clave: 'porArticulo', nombre: 'por-articulo', titulo: 'Artículos', icono: 'articulos' },
+			{ clave: 'movimientos', nombre: 'movimientos', titulo: 'Movimientos', icono: 'movimientos' },
+			{ clave: 'anulados', nombre: 'anulados', titulo: 'Anulados', icono: 'anulados' },
 		];
-		const chips = tabla => tabla.columnas.map(c => `<span>${Util.esc(c.titulo)}</span>`).join('');
+		const JSON_ = [
+			{ id: 'json-cierre', titulo: 'Cierre', icono: 'cierre' },
+			{ id: 'json-carta', titulo: 'Carta', icono: 'carta' },
+		];
+		const cantidad = clave => t[clave].filas.length;
 
 		panel.innerHTML = `
-			<section class="tarjeta filtros">
-				<div class="filtros-cabecera"><h2>Filtros</h2><button class="enlace" id="quitar-filtros">Quitar filtros</button></div>
-				<div class="grilla-filtros">
-					<label>Desde (fecha y hora)<input type="datetime-local" name="desde" value="${f.desde}"></label>
-					<label>Hasta (fecha y hora)<input type="datetime-local" name="hasta" value="${f.hasta}"></label>
-					<label>Desde el pedido<input name="numeroDesde" inputmode="numeric" value="${f.numeroDesde}" placeholder="${k.desdeNumero ?? ''}"></label>
-					<label>Hasta el pedido<input name="numeroHasta" inputmode="numeric" value="${f.numeroHasta}" placeholder="${k.hastaNumero ?? ''}"></label>
-					<label>Medio de pago<select name="medio">
-						<option value="">Todos</option>
-						${inicial.mediosDisponibles.map(m => `<option ${f.medio === m ? 'selected' : ''}>${Util.esc(m)}</option>`).join('')}
-					</select></label>
-					<label>Pedidos anulados<select name="anulados">
-						<option value="no" ${f.anulados === 'no' ? 'selected' : ''}>No incluir</option>
-						<option value="si" ${f.anulados === 'si' ? 'selected' : ''}>Incluir</option>
-						<option value="solo" ${f.anulados === 'solo' ? 'selected' : ''}>Solo anulados</option>
-					</select></label>
+			<section class="tarjeta export-excel">
+				<div class="export-icono grande">${this.svg('excel')}</div>
+				<div class="export-texto">
+					<h2>Excel de ventas</h2>
+					<div class="pildoras"><span>Tickets</span><span>Medios de pago</span><span>Artículos</span></div>
 				</div>
-				<div class="alerta" id="resumen-filtros"></div>
+				<button class="principal grande" id="descargar-excel">${this.svg('descargar')} Descargar</button>
 			</section>
 
-			<section class="tarjeta exportacion-excel">
-				<div class="excel-texto">
-					<span class="etiqueta sincargo">EXCEL · 3 PESTAÑAS</span>
-					<h2>Planilla de ventas (.xlsx)</h2>
-					<p class="ayuda sin-margen">Un solo archivo de Excel con tres pestañas. Respeta los filtros.</p>
-					<div class="pestanas-excel">
-						<div><b>Ventas por ticket</b><div class="columnas-chips">${chips(inicial.ventasPorTicket)}</div></div>
-						<div><b>Por medio de pago</b><div class="columnas-chips">${chips(inicial.porMedio)}<span>+ Total</span></div></div>
-						<div><b>Por artículo</b><div class="columnas-chips">${chips(inicial.porArticulo)}<span>+ Total</span></div></div>
-					</div>
+			<details class="export-grupo">
+				<summary><span class="export-formato">CSV</span> Tablas por separado</summary>
+				<div class="export-mosaico">${CSV.map(x => `
+					<button class="export-baldosa" data-csv="${x.clave}">
+						<span class="export-icono">${this.svg(x.icono)}</span>
+						<b>${x.titulo}</b>
+						<span class="suave">${cantidad(x.clave)} fila${cantidad(x.clave) === 1 ? '' : 's'}</span>
+					</button>`).join('')}
 				</div>
-				<div class="excel-accion">
-					<button class="principal grande" id="descargar-excel">Descargar Excel</button>
-					<span class="nombre-archivo">${archivo('ventas', 'xlsx')}</span>
-				</div>
-			</section>
-
-			<details class="tarjeta sin-relleno lista-csv">
-				<summary>Tablas por separado (CSV) <span class="suave">· una tabla por archivo, respetan los filtros</span></summary>
-				${CSV.map(x => `
-					<div class="fila-csv">
-						<div class="fila-csv-texto">
-							<b>${Util.esc(inicial[x.clave].nombre)}</b>
-							<span class="ayuda sin-margen">${x.descripcion}</span>
-							<div class="columnas-chips">${chips(inicial[x.clave])}</div>
-						</div>
-						<span class="nombre-archivo">${archivo(x.nombre, 'csv')}</span>
-						<button data-csv="${x.clave}">Descargar CSV</button>
-					</div>`).join('')}
 			</details>
 
-			<h2 class="subtitulo">Datos (JSON) <span class="suave">· siempre completos, sin filtros</span></h2>
-			<div class="grilla-json">
-				<div class="tarjeta">
-					<h3>Cierre para consolidar</h3>
-					<p class="ayuda sin-margen">Resumen y detalle de toda la caja, para juntar después todas las cajas. Incluye costo y ganancia.</p>
-					<div class="pie-json"><span class="nombre-archivo">${archivo('cierre', 'json')}</span><button id="json-cierre">Descargar JSON</button></div>
+			<details class="export-grupo">
+				<summary><span class="export-formato json">JSON</span> Datos completos</summary>
+				<div class="export-mosaico">${JSON_.map(x => `
+					<button class="export-baldosa" id="${x.id}">
+						<span class="export-icono">${this.svg(x.icono)}</span>
+						<b>${x.titulo}</b>
+					</button>`).join('')}
 				</div>
-				<div class="tarjeta">
-					<h3>Carta</h3>
-					<p class="ayuda sin-margen">Artículos y medios de pago, para cargar en otras cajas.</p>
-					<div class="pie-json"><span class="nombre-archivo">${archivo('carta', 'json')}</span><button id="json-carta">Descargar JSON</button></div>
-				</div>
-			</div>
-			<p class="ayuda">CSV: separado por “;” y con coma decimal, listo para Excel en español. Costo y ganancia no salen en las planillas, solo en el JSON para consolidar.</p>`;
+			</details>`;
 
-		// --- Filtros: se aplican al escribir, y el aviso dice cuánto se va a exportar
-		const leerFiltros = () => {
-			panel.querySelectorAll('.grilla-filtros [name]').forEach(campo => { f[campo.name] = campo.value.trim(); });
-		};
-		const actualizarResumen = async () => {
-			const aviso = panel.querySelector('#resumen-filtros');
-			const numeroInvalido = ['numeroDesde', 'numeroHasta'].some(n => f[n] !== '' && !/^\d+$/.test(f[n]));
-			if (numeroInvalido) {
-				aviso.className = 'alerta peligro';
-				aviso.textContent = 'Los números de pedido tienen que ser números enteros (ej.: 2000).';
-				return;
-			}
-			const t = await Exportaciones.tablas(f);
-			aviso.className = 'alerta';
-			aviso.innerHTML = `Con estos filtros se exportan <b>${t.cantidadPedidos}</b> pedido${t.cantidadPedidos === 1 ? '' : 's'} y
-				<b>${t.cantidadMovimientos}</b> movimiento${t.cantidadMovimientos === 1 ? '' : 's'} de efectivo.`;
-		};
-		panel.querySelectorAll('.grilla-filtros [name]').forEach(campo => {
-			campo.oninput = campo.onchange = () => { leerFiltros(); actualizarResumen(); };
-		});
-		panel.querySelector('#quitar-filtros').onclick = () => {
-			this.filtros = { ...Exportaciones.FILTROS_INICIALES };
-			this.dibujarExportaciones(panel, k);
-		};
-		actualizarResumen();
-
-		// --- Descargas
-		const tablasActuales = async () => {
-			leerFiltros();
-			if (['numeroDesde', 'numeroHasta'].some(n => f[n] !== '' && !/^\d+$/.test(f[n]))) {
-				Util.avisar('Revisá los números de pedido en los filtros', 'error');
-				return null;
-			}
-			return Exportaciones.tablas(f);
-		};
-
-		panel.querySelector('#descargar-excel').onclick = async () => {
-			const t = await tablasActuales();
-			if (!t) return;
+		panel.querySelector('#descargar-excel').onclick = () => {
 			Util.descargar(archivo('ventas', 'xlsx'), Exportaciones.excelVentas(t),
 				'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 			Util.avisar('Excel descargado');
 		};
-		panel.querySelectorAll('[data-csv]').forEach(b => b.onclick = async () => {
-			const t = await tablasActuales();
-			if (!t) return;
+		panel.querySelectorAll('[data-csv]').forEach(b => b.onclick = () => {
 			const x = CSV.find(y => y.clave === b.dataset.csv);
 			Util.descargar(archivo(x.nombre, 'csv'), Exportaciones.csv(t[x.clave]), 'text/csv;charset=utf-8');
-			Util.avisar(`${t[x.clave].nombre} descargado`);
+			Util.avisar(`${x.titulo} descargado`);
 		});
 		panel.querySelector('#json-cierre').onclick = async () => {
 			Util.descargar(archivo('cierre', 'json'), await Datos.exportarCierre());
-			Util.avisar('Cierre exportado');
+			Util.avisar('Cierre descargado');
 		};
 		panel.querySelector('#json-carta').onclick = async () => {
 			Util.descargar(archivo('carta', 'json'), await Datos.exportarCarta());
-			Util.avisar('Carta exportada');
+			Util.avisar('Carta descargada');
 		};
+	},
+
+	/** Íconos de trazo simple (SVG) para las exportaciones */
+	svg(nombre) {
+		const trazos = {
+			excel: '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/>',
+			descargar: '<path d="M12 4v11m0 0l-4-4m4 4l4-4M5 20h14"/>',
+			ticket: '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>',
+			medios: '<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18M7 15h3"/>',
+			articulos: '<path d="M4 7l8-4 8 4-8 4z"/><path d="M4 7v10l8 4 8-4V7M12 11v10"/>',
+			movimientos: '<path d="M7 7h11l-3-3M17 17H6l3 3"/>',
+			anulados: '<circle cx="12" cy="12" r="9"/><path d="M6 6l12 12"/>',
+			cierre: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+			carta: '<path d="M5 3h14v18H5z"/><path d="M9 7h6M9 11h6M9 15h4"/>',
+		};
+		return `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${trazos[nombre]}</svg>`;
 	},
 };

@@ -1,7 +1,10 @@
 /*
  * Exportaciones del cierre: arma las tablas a partir de los pedidos y los
- * movimientos guardados, aplicando los filtros, y las convierte en CSV o en
- * un Excel con varias pestañas.
+ * movimientos guardados y las convierte en CSV o en un Excel con varias pestañas.
+ *
+ * La pantalla exporta todo, sin los pedidos anulados (filtros por defecto).
+ * La lógica de filtros queda acá por si se vuelve a usar; la pantalla con
+ * filtros está en borradores/exportaciones-con-filtros/.
  *
  * Las tablas se arman una sola vez y de ahí salen los dos formatos, así el
  * CSV y el Excel siempre tienen exactamente los mismos números.
@@ -45,7 +48,7 @@ const Exportaciones = (() => {
 	}
 
 	/** Lee todo lo guardado y devuelve las tablas ya filtradas */
-	async function tablas(f) {
+	async function tablas(f = FILTROS_INICIALES) {
 		const todosPedidos = (await DB.todos('pedidos')).sort((a, b) => a.numero - b.numero);
 		const pedidos = filtrarPedidos(todosPedidos, f);
 		const movimientos = filtrarMovimientos(await Datos.listarMovimientos(), f);

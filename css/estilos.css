@@ -514,39 +514,31 @@ button.medio.elegido span { color: #d3dcea; }
 
 /* -------------------------------------------------------- Exportaciones */
 
-.filtros { display: flex; flex-direction: column; gap: 14px; margin-bottom: 16px; }
-.filtros-cabecera { display: flex; justify-content: space-between; align-items: center; }
-.filtros-cabecera h2 { margin: 0; }
-.filtros-cabecera .enlace { margin-left: 0; }
-.grilla-filtros { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-.grilla-filtros label { display: grid; gap: 6px; font-weight: 700; font-size: .9rem; }
+.export-excel { display: flex; flex-wrap: wrap; align-items: center; gap: 20px; border: 2px solid var(--acento); margin-bottom: 16px; }
+.export-texto { flex: 1 1 240px; display: flex; flex-direction: column; gap: 10px; }
+.export-texto h2 { margin: 0; font-size: 1.35rem; }
+.export-excel button.grande { display: inline-flex; align-items: center; gap: 8px; }
+.export-excel button.grande svg { width: 22px; height: 22px; }
 
-.columnas-chips { display: flex; flex-wrap: wrap; gap: 4px; }
-.columnas-chips span { font-size: .75rem; padding: 2px 8px; border-radius: 99px; background: var(--fondo); color: #3a4a5e; }
-.nombre-archivo { font-family: Consolas, "Courier New", monospace; font-size: .8rem; color: var(--suave); overflow-wrap: anywhere; }
+.export-icono { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 12px; background: var(--fondo); color: var(--marca); }
+.export-icono svg { width: 26px; height: 26px; }
+.export-icono.grande { width: 72px; height: 72px; border-radius: 16px; background: var(--marca); color: var(--acento); }
+.export-icono.grande svg { width: 40px; height: 40px; }
 
-.exportacion-excel { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; border: 2px solid var(--acento); margin-bottom: 16px; }
-.excel-texto { flex: 1 1 460px; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
-.excel-texto h2 { margin: 0; font-size: 1.25rem; }
-.excel-texto .etiqueta { align-self: flex-start; }
-.pestanas-excel { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-.pestanas-excel > div { background: var(--fondo); border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
-.pestanas-excel .columnas-chips span { background: #fff; }
-.excel-accion { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.pildoras { display: flex; flex-wrap: wrap; gap: 6px; }
+.pildoras span { background: var(--acento-suave); color: #6b4a00; border-radius: 99px; padding: 3px 12px; font-size: .85rem; font-weight: 700; }
 
-.lista-csv { margin-bottom: 18px; }
-.lista-csv summary { padding: 14px 16px; font-weight: 700; font-size: 1.05rem; cursor: pointer; }
-.lista-csv summary .suave { font-weight: 400; }
-.fila-csv { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; padding: 12px 16px; border-top: 1px solid #e3e7ee; }
-.fila-csv-texto { flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.export-grupo { background: var(--superficie); border: 1px solid var(--borde); border-radius: var(--radio); margin-bottom: 14px; max-width: 1100px; }
+.export-grupo summary { display: flex; align-items: center; gap: 10px; padding: 14px 18px; font-weight: 700; font-size: 1.05rem; cursor: pointer; min-height: 44px; }
+.export-formato { background: var(--marca); color: #fff; border-radius: 6px; padding: 2px 8px; font-size: .75rem; letter-spacing: .05em; }
+.export-formato.json { background: var(--suave); }
 
-.grilla-json { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; max-width: 1100px; }
-.grilla-json .tarjeta { display: flex; flex-direction: column; gap: 10px; }
-.grilla-json h3 { margin: 0; font-size: 1.05rem; }
-.pie-json { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: auto; }
-.subtitulo .suave { font-weight: 400; font-size: .9rem; }
-
-@media (max-width: 1100px) {
-	.grilla-filtros { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-	.pestanas-excel { grid-template-columns: 1fr; }
-}
+.export-mosaico { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; padding: 0 18px 18px; }
+button.export-baldosa { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 10px; border-radius: 12px; min-height: 130px; text-align: center; }
+button.export-baldosa:hover:not(:disabled) { border-color: var(--acento); background: var(--acento-suave); }
+button.export-baldosa:hover .export-icono { background: #fff; }
+.export-grupo summary { list-style: none; }
+.export-grupo summary::-webkit-details-marker { display: none; }
+.export-grupo summary::after { content: "▸"; margin-left: auto; color: var(--suave); transition: transform .15s; }
+.export-grupo[open] summary::after { transform: rotate(90deg); }
+@media (prefers-reduced-motion: reduce) { .export-grupo summary::after { transition: none; } }
