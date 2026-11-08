@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="es">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="theme-color" content="#1f4e5f">
+	<title>Cantina</title>
+	<link rel="manifest" href="manifest.webmanifest">
+	<link rel="icon" href="iconos/icono-192.png">
+	<link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+	<!-- Franja amarilla que solo aparece en los equipos de prueba (8 y 9) -->
+	<div id="franja-prueba" class="franja-prueba oculto"></div>
+
+	<div class="app">
+		<!-- Barra lateral: se arma desde js/app.js -->
+		<nav id="menu" class="menu" aria-label="Menú principal"></nav>
+
+		<!-- Cada pantalla se dibuja acá adentro -->
+		<main id="contenido" class="contenido"></main>
+	</div>
+
+	<!-- Ventanas emergentes y avisos -->
+	<div id="modal" class="modal oculto"></div>
+	<div id="aviso" class="aviso oculto"></div>
+
+	<!-- Orden de carga: primero lo que usan todos, después cada pantalla, al final la app -->
+	<script src="js/util.js"></script>
+	<script src="js/db.js"></script>
+	<script src="js/datos.js"></script>
+	<script src="js/documentos.js"></script>
+	<script src="js/pantallas/vender.js"></script>
+	<script src="js/pantallas/pedidos.js"></script>
+	<script src="js/pantallas/caja.js"></script>
+	<script src="js/pantallas/cierre.js"></script>
+	<script src="js/pantallas/configuracion.js"></script>
+	<script src="js/pantallas/articulos.js"></script>
+	<script src="js/pantallas/medios.js"></script>
+	<script src="js/app.js"></script>
+</body>
+</html>

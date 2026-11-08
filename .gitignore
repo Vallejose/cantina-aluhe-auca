@@ -1,0 +1,14 @@
+# Sistema operativo
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Editores
+.vscode/
+.idea/
+
+# Archivos que exporta la app (tienen datos de ventas, no van al repositorio)
+carta-equipo*.json
+cierre-equipo*.json
+ventas-equipo*.csv
+respaldo-equipo*.json
