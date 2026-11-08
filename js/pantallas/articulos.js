@@ -38,7 +38,7 @@ const PantallaArticulos = {
 				<div class="vacio">
 					<div class="vacio-icono">🍔</div>
 					<p><strong>Todavía no hay artículos.</strong></p>
-					<p>Cargalos con <em>+ Nuevo artículo</em>, o si otro equipo ya tiene la carta armada, usá <em>Importar carta</em>.</p>
+					<p>Cargalos con <em>+ Nuevo artículo</em>, o si otra caja ya tiene la carta armada, usá <em>Importar carta</em>.</p>
 				</div>` : `
 				<div class="tarjeta sin-relleno">
 					<table class="tabla">
@@ -125,7 +125,7 @@ const PantallaArticulos = {
 
 	async exportar() {
 		const cfg = await Datos.configuracion();
-		Util.descargar(`carta-equipo${cfg.equipo}-${Util.hoy()}.json`, await Datos.exportarCarta());
+		Util.descargar(`carta-caja${cfg.equipo}-${Util.hoy()}.json`, await Datos.exportarCarta());
 		Util.avisar('Carta exportada');
 	},
 
@@ -136,7 +136,7 @@ const PantallaArticulos = {
 			const carta = Datos.leerCarta(texto);
 			const ok = await Util.confirmar('Importar carta',
 				`El archivo tiene ${carta.articulos.length} artículos y ${carta.mediosPago.length} medios de pago. ` +
-				'Van a reemplazar la carta y los medios de pago de este equipo. Las ventas no se tocan.', 'Importar');
+				'Van a reemplazar la carta y los medios de pago de esta caja. Las ventas no se tocan.', 'Importar');
 			if (!ok) return;
 			await Datos.importarCarta(carta);
 			Util.avisar('Carta importada');

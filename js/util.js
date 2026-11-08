@@ -47,6 +47,12 @@ const Util = (() => {
 		return `${dos(d.getDate())}/${dos(d.getMonth() + 1)}/${d.getFullYear()} ${hora(iso)}`;
 	}
 
+	/** "08/11 21:47" (sin el año, para mostrar rangos compactos) */
+	function fechaCorta(iso) {
+		const d = new Date(iso);
+		return `${dos(d.getDate())}/${dos(d.getMonth() + 1)} ${hora(iso)}`;
+	}
+
 	/** "21:47" */
 	function hora(iso) {
 		const d = new Date(iso);
@@ -143,5 +149,5 @@ const Util = (() => {
 		return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 	}
 
-	return { dinero, dineroParaCampo, leerDinero, esc, fechaHora, hora, avisar, modal, cerrarModal, confirmar, descargar, elegirArchivo, hoy };
+	return { dinero, dineroParaCampo, leerDinero, esc, fechaHora, fechaCorta, hora, avisar, modal, cerrarModal, confirmar, descargar, elegirArchivo, hoy };
 })();

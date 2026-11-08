@@ -1,7 +1,27 @@
-/* Cierre: ventas, costo y ganancia del equipo, por medio de pago y por artículo. */
+/* Cierre: ventas, costo y ganancia de la caja, por medio de pago y por artículo. */
 const PantallaCierre = {
 	titulo: 'Cierre',
 	icono: '📊',
+
+	/** "pedido 8000" si hay uno solo; "pedidos 8000 a 8012" si hay varios */
+	rangoPedidos(k) {
+		return k.desdeNumero === k.hastaNumero
+			? `pedido <b>${k.desdeNumero}</b>`
+			: `pedidos <b>${k.desdeNumero}</b> a <b>${k.hastaNumero}</b>`;
+	},
+
+	/**
+	 * Fechas compactas, sin el año:
+	 *   mismo minuto  → 08/11 03:32
+	 *   mismo día     → 08/11 de 18:00 a 23:40
+	 *   días distintos → 08/11 18:00 a 09/11 01:20
+	 */
+	rangoFechas(desde, hasta) {
+		const dia = iso => Util.fechaCorta(iso).split(' ')[0];
+		if (Util.fechaCorta(desde) === Util.fechaCorta(hasta)) return `<b>${Util.fechaCorta(desde)}</b>`;
+		if (dia(desde) === dia(hasta)) return `<b>${dia(desde)}</b> de <b>${Util.hora(desde)}</b> a <b>${Util.hora(hasta)}</b>`;
+		return `<b>${Util.fechaCorta(desde)}</b> a <b>${Util.fechaCorta(hasta)}</b>`;
+	},
 
 	async dibujar(c) {
 		const k = await Datos.calcularCierre();
@@ -9,7 +29,7 @@ const PantallaCierre = {
 
 		const rango = k.desdeNumero == null
 			? 'Todavía no hay pedidos'
-			: `Equipo ${k.equipo}${k.prueba ? ' (prueba)' : ''} · pedidos ${k.desdeNumero} a ${k.hastaNumero} · ${Util.fechaHora(k.desdeFecha)} a ${Util.fechaHora(k.hastaFecha)}`;
+			: `Caja ${k.equipo}${k.prueba ? ' (prueba)' : ''} · ${this.rangoPedidos(k)} · ${this.rangoFechas(k.desdeFecha, k.hastaFecha)}`;
 
 		c.innerHTML = `
 			<header class="cabecera">
@@ -75,7 +95,7 @@ const PantallaCierre = {
 				</section>
 			</div>`;
 
-		const nombreArchivo = ext => `cierre-equipo${k.equipo}${k.prueba ? '-PRUEBA' : ''}-${Util.hoy()}.${ext}`;
+		const nombreArchivo = ext => `cierre-caja${k.equipo}${k.prueba ? '-PRUEBA' : ''}-${Util.hoy()}.${ext}`;
 		c.querySelector('#exportar').onclick = async () => {
 			Util.descargar(nombreArchivo('json'), await Datos.exportarCierre());
 			Util.avisar('Cierre exportado');

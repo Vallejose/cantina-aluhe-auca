@@ -501,3 +501,6 @@ button.medio.elegido span { color: #d3dcea; }
 	.venta { grid-template-columns: minmax(0, 1fr) 300px; }
 	.grilla-medios { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* Números y fechas resaltados dentro de un texto suave (encabezado del Cierre) */
+.suave b { color: var(--texto); }

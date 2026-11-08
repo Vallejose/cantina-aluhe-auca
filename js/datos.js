@@ -52,14 +52,14 @@ const Datos = (() => {
 	async function guardarConfiguracion({ equipo, nombreCantina, pieTicket }) {
 		const n = Number(equipo);
 		if (!Number.isInteger(n) || n < 1 || n > 9)
-			throw new Error('El número de equipo tiene que ser del 1 al 9');
+			throw new Error('El número de caja tiene que ser del 1 al 9');
 		if (!nombreCantina.trim())
 			throw new Error('Poné el nombre de la cantina: sale en el ticket');
 
 		const primeraVez = !(await estaConfigurado());
 		const anterior = await DB.leerConfig('equipo');
 		if (anterior != null && anterior !== n && (await hayVentas()))
-			throw new Error('No se puede cambiar el número de equipo: ya hay ventas numeradas con el ' + anterior);
+			throw new Error('No se puede cambiar el número de caja: ya hay ventas numeradas con el ' + anterior);
 
 		await DB.guardarConfig('equipo', n);
 		await DB.guardarConfig('nombreCantina', nombreCantina.trim());
@@ -87,7 +87,7 @@ const Datos = (() => {
 	async function resetearEquipoDePrueba() {
 		const equipo = await DB.leerConfig('equipo');
 		if (!esPrueba(equipo))
-			throw new Error('Solo los equipos de prueba (8 y 9) se pueden resetear');
+			throw new Error('Solo las cajas de prueba (8 y 9) se pueden resetear');
 		await DB.reemplazarTodo('pedidos', []);
 		await DB.reemplazarTodo('movimientos', []);
 	}
@@ -223,7 +223,7 @@ const Datos = (() => {
 			const almacen = tx.objectStore('pedidos');
 			const claves = await DB.esperar(almacen.getAllKeys());
 			const numero = claves.length ? Math.max(...claves) + 1 : r.desde;
-			if (numero > r.hasta) throw new Error(`Se terminó la numeración de este equipo (${r.desde} a ${r.hasta})`);
+			if (numero > r.hasta) throw new Error(`Se terminó la numeración de esta caja (${r.desde} a ${r.hasta})`);
 
 			const pedido = {
 				numero,
@@ -419,14 +419,14 @@ const Datos = (() => {
 	 * válidos (los anulados no aparecen). Separado por ";" y con coma decimal,
 	 * que es lo que espera Excel en español.
 	 *
-	 * Columnas: Pedido, Fecha, Hora, Equipo, Medio de pago, Venta.
+	 * Columnas: Pedido, Fecha, Hora, Caja, Medio de pago, Venta.
 	 * "Venta" es lo cobrado en el ticket (los sin cargo van en 0).
 	 */
 	async function exportarCSV() {
 		const pedidos = (await DB.todos('pedidos')).filter(p => !p.anulado).sort((a, b) => a.numero - b.numero);
 		const monto = c => (c / 100).toFixed(2).replace('.', ',');
 		const celda = t => /[;"\n]/.test(String(t)) ? `"${String(t).replace(/"/g, '""')}"` : String(t);
-		const filas = [['Pedido', 'Fecha', 'Hora', 'Equipo', 'Medio de pago', 'Venta']];
+		const filas = [['Pedido', 'Fecha', 'Hora', 'Caja', 'Medio de pago', 'Venta']];
 		for (const p of pedidos) {
 			const d = new Date(p.fecha);
 			const fecha = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
@@ -455,7 +455,7 @@ const Datos = (() => {
 		if (r?.tipo !== 'cantina-respaldo' || !r.config || ALMACENES.some(a => !Array.isArray(r[a])))
 			throw new Error('El archivo no es un respaldo de esta aplicación');
 		const n = Number(r.config.equipo);
-		if (!Number.isInteger(n) || n < 1 || n > 9) throw new Error('El respaldo no tiene un número de equipo válido');
+		if (!Number.isInteger(n) || n < 1 || n > 9) throw new Error('El respaldo no tiene un número de caja válido');
 		return r;
 	}
 
@@ -467,7 +467,7 @@ const Datos = (() => {
 	async function restaurarRespaldo(r) {
 		const actual = await DB.leerConfig('equipo');
 		if (actual != null && actual !== Number(r.config.equipo) && (await hayVentas()))
-			throw new Error(`Este dispositivo es el Equipo ${actual} y tiene ventas: no se puede cargar un respaldo del Equipo ${r.config.equipo}`);
+			throw new Error(`Este dispositivo es la Caja ${actual} y tiene ventas: no se puede cargar un respaldo de la Caja ${r.config.equipo}`);
 
 		await DB.operar(['config', ...ALMACENES], 'readwrite', async tx => {
 			for (const a of ['config', ...ALMACENES]) await DB.esperar(tx.objectStore(a).clear());

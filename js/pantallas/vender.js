@@ -145,9 +145,9 @@ const PantallaVender = {
 		const agotado = n.restantes === 0;
 
 		const aviso = agotado
-			? `<div class="alerta peligro">Este equipo usó todos sus números (hasta el ${n.hasta}). No se pueden hacer más pedidos.</div>`
+			? `<div class="alerta peligro">Esta caja usó todos sus números (hasta el ${n.hasta}). No se pueden hacer más pedidos.</div>`
 			: n.restantes <= Datos.AVISO_NUMERACION
-				? `<div class="alerta">Quedan ${n.restantes} números en este equipo (hasta el ${n.hasta}).</div>`
+				? `<div class="alerta">Quedan ${n.restantes} números en esta caja (hasta el ${n.hasta}).</div>`
 				: '';
 
 		const lineas = this.lineas.map(l => {

@@ -12,7 +12,7 @@ const Documentos = (() => {
 	function encabezado(cfg, pedido) {
 		return `
 			<div class="centro negrita">${Util.esc((cfg.nombreCantina || Datos.NOMBRE_POR_DEFECTO).toUpperCase())}</div>
-			<div class="centro">Equipo ${pedido.equipo}</div>
+			<div class="centro">Caja ${pedido.equipo}</div>
 			${pedido.prueba ? '<div class="centro negrita">*** PRUEBA – NO VÁLIDO ***</div>' : ''}`;
 	}
 
@@ -62,7 +62,7 @@ const Documentos = (() => {
 				<div class="centro negrita">COMANDA</div>
 				${pedido.prueba ? '<div class="centro negrita">*** PRUEBA ***</div>' : ''}
 				<div class="centro numero-grande">${pedido.numero}</div>
-				<div class="centro">${Util.fechaHora(pedido.fecha)} · Equipo ${pedido.equipo}</div>
+				<div class="centro">${Util.fechaHora(pedido.fecha)} · Caja ${pedido.equipo}</div>
 				<div class="corte"></div>
 				${lineas}
 				<div class="corte"></div>
@@ -79,7 +79,7 @@ const Documentos = (() => {
 				<div class="centro">COMPROBANTE DE RETIRO</div>
 				${m.prueba ? '<div class="centro negrita">*** PRUEBA – NO VÁLIDO ***</div>' : ''}
 				<div class="centro numero-mediano">N.º ${Util.esc(m.comprobante)}</div>
-				<div class="centro">${Util.fechaHora(m.fecha)} · Equipo ${m.equipo}</div>
+				<div class="centro">${Util.fechaHora(m.fecha)} · Caja ${m.equipo}</div>
 				<div class="corte"></div>
 				<div class="fila negrita total"><span>MONTO</span><span>${Util.dinero(m.monto)}</span></div>
 				<div>Motivo: ${Util.esc(m.motivo)}</div>

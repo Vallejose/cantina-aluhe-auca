@@ -18,20 +18,20 @@ const PantallaConfiguracion = {
 			<header class="cabecera">
 				<div>
 					${primeraVez ? '<span class="pastilla">Primera vez en este dispositivo</span>' : ''}
-					<h1>${primeraVez ? 'Bienvenido: configurá este equipo' : 'Configuración del equipo'}</h1>
+					<h1>${primeraVez ? 'Bienvenido: configurá esta caja' : 'Configuración de la caja'}</h1>
 				</div>
 			</header>
 
 			<div class="columnas">
 				<form class="tarjeta formulario ancho" id="form-config">
-					<p class="ayuda sin-margen">Cada dispositivo que vende tiene que tener un número distinto. Se elige una sola vez.</p>
+					<p class="ayuda sin-margen">Cada dispositivo que vende es una caja y tiene que tener un número distinto. Se elige una sola vez.</p>
 
 					<fieldset>
-						<legend>Equipos de venta</legend>
+						<legend>Cajas de venta</legend>
 						<div class="grilla-equipos">${Datos.EQUIPOS_VENTA.map(boton).join('')}</div>
 					</fieldset>
 					<fieldset>
-						<legend>Equipos de prueba <small>· se pueden resetear</small></legend>
+						<legend>Cajas de prueba <small>· se pueden resetear</small></legend>
 						<div class="grilla-equipos">${Datos.EQUIPOS_PRUEBA.map(boton).join('')}</div>
 					</fieldset>
 
@@ -65,16 +65,16 @@ const PantallaConfiguracion = {
 			const resumen = c.querySelector('#resumen');
 			const guardar = c.querySelector('#guardar');
 			if (elegido == null) {
-				resumen.innerHTML = 'Elegí un número de equipo.';
+				resumen.innerHTML = 'Elegí un número de caja.';
 				guardar.textContent = 'Empezar';
 				guardar.disabled = true;
 				return;
 			}
 			const r = Datos.rangoNumeracion(elegido);
-			resumen.innerHTML = `<b>Equipo ${elegido}${Datos.esPrueba(elegido) ? ' · prueba' : ''}</b>
+			resumen.innerHTML = `<b>Caja ${elegido}${Datos.esPrueba(elegido) ? ' · prueba' : ''}</b>
 				<span>numera sus pedidos del <b>${r.desde}</b> al <b>${r.hasta}</b>.
 				${bloqueado ? 'Ya tiene ventas, así que no se puede cambiar.' : 'Después de la primera venta no se puede cambiar.'}</span>`;
-			guardar.textContent = primeraVez ? `Empezar como Equipo ${elegido}` : 'Guardar';
+			guardar.textContent = primeraVez ? `Empezar como Caja ${elegido}` : 'Guardar';
 			guardar.disabled = false;
 		};
 
@@ -111,10 +111,10 @@ const PantallaConfiguracion = {
 			<div class="tarjeta">
 				<h2>Cómo repartir los números</h2>
 				<ol class="lista">
-					<li>Antes del evento, anotá qué dispositivo es cada equipo (por ejemplo: 1 = notebook de la caja principal).</li>
+					<li>Antes del evento, anotá qué dispositivo es cada caja (por ejemplo: Caja 1 = notebook de la entrada).</li>
 					<li>Pegale una etiqueta con su número a cada dispositivo.</li>
 					<li>Al abrir la app por primera vez, elegí ese número.</li>
-					<li>Los equipos 8 y 9 son solo para probar: sus ventas no cuentan.</li>
+					<li>Las cajas 8 y 9 son solo para probar: sus ventas no cuentan.</li>
 				</ol>
 			</div>`;
 
@@ -122,7 +122,7 @@ const PantallaConfiguracion = {
 		html += `
 			<div class="tarjeta">
 				<h2>Respaldo de los datos</h2>
-				<p class="ayuda sin-margen">Guarda en un archivo todo lo de este equipo: configuración, carta, pedidos y caja.
+				<p class="ayuda sin-margen">Guarda en un archivo todo lo de esta caja: configuración, carta, pedidos y movimientos de efectivo.
 					Conviene hacerlo durante el evento, por si el navegador borra sus datos o el dispositivo falla.</p>
 				<div class="acciones" style="margin-top: 12px">
 					${cfg.equipo != null ? '<button id="respaldar" class="principal">Exportar respaldo completo</button>' : ''}
@@ -135,9 +135,9 @@ const PantallaConfiguracion = {
 			const datos = await Datos.contarDatosDePrueba();
 			html += `
 				<div class="tarjeta">
-					<h2>Resetear equipo de prueba</h2>
+					<h2>Resetear caja de prueba</h2>
 					<p class="ayuda sin-margen">Borra ${datos.pedidos} pedido(s) y ${datos.movimientos} movimiento(s) de caja, y la numeración vuelve a ${cfg.equipo * 1000}. La carta y los medios de pago se mantienen.</p>
-					<div class="acciones"><button id="resetear" class="peligro-lleno" ${datos.pedidos + datos.movimientos === 0 ? 'disabled' : ''}>Resetear Equipo ${cfg.equipo}</button></div>
+					<div class="acciones"><button id="resetear" class="peligro-lleno" ${datos.pedidos + datos.movimientos === 0 ? 'disabled' : ''}>Resetear Caja ${cfg.equipo}</button></div>
 				</div>`;
 		}
 		lateral.innerHTML = html;
@@ -148,7 +148,7 @@ const PantallaConfiguracion = {
 		const respaldar = lateral.querySelector('#respaldar');
 		if (respaldar) respaldar.onclick = async () => {
 			const texto = await Datos.exportarRespaldo();
-			Util.descargar(`respaldo-equipo${cfg.equipo}${cfg.prueba ? '-PRUEBA' : ''}-${Util.hoy()}-${Util.hora(new Date().toISOString()).replace(':', '')}.json`, texto);
+			Util.descargar(`respaldo-caja${cfg.equipo}${cfg.prueba ? '-PRUEBA' : ''}-${Util.hoy()}-${Util.hora(new Date().toISOString()).replace(':', '')}.json`, texto);
 			Util.avisar('Respaldo exportado');
 			App.mostrar();
 		};
@@ -161,7 +161,7 @@ const PantallaConfiguracion = {
 		try {
 			const r = Datos.leerRespaldo(texto);
 			const ok = await Util.confirmar('Restaurar respaldo',
-				`Respaldo del Equipo ${r.config.equipo}, del ${Util.fechaHora(r.exportado)}: ${r.pedidos.length} pedidos, ` +
+				`Respaldo de la Caja ${r.config.equipo}, del ${Util.fechaHora(r.exportado)}: ${r.pedidos.length} pedidos, ` +
 				`${r.movimientos.length} movimientos de caja y ${r.articulos.length} artículos. ` +
 				'Reemplaza TODO lo que hay en este dispositivo.', 'Restaurar');
 			if (!ok) return;
@@ -175,8 +175,8 @@ const PantallaConfiguracion = {
 	},
 
 	confirmarReseteo(equipo) {
-		Util.modal(`¿Resetear el Equipo ${equipo}?`, `
-			<p>Se borran los pedidos y los movimientos de caja de este equipo de prueba. No se puede deshacer.</p>
+		Util.modal(`¿Resetear la Caja ${equipo}?`, `
+			<p>Se borran los pedidos y los movimientos de caja de esta caja de prueba. No se puede deshacer.</p>
 			<label class="formulario">Para confirmar escribí <b>RESETEAR</b><input id="confirmacion" autocomplete="off"></label>`, [
 			{ texto: 'Cancelar' },
 			{
@@ -186,7 +186,7 @@ const PantallaConfiguracion = {
 						return false;
 					}
 					await Datos.resetearEquipoDePrueba();
-					Util.avisar(`Equipo ${equipo} reseteado`);
+					Util.avisar(`Caja ${equipo} reseteada`);
 					App.mostrar();
 				},
 			},

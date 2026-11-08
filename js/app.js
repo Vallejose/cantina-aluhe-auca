@@ -69,7 +69,7 @@ const App = {
 		menu.innerHTML = `
 			<div class="marca">
 				<div class="marca-nombre">${Util.esc(cfg.nombreCantina || Datos.NOMBRE_POR_DEFECTO)}</div>
-				<div class="marca-equipo">${cfg.equipo ? 'Equipo ' + cfg.equipo + (cfg.prueba ? ' · prueba' : '') : 'Sin configurar'}</div>
+				<div class="marca-equipo">${cfg.equipo ? 'Caja ' + cfg.equipo + (cfg.prueba ? ' · prueba' : '') : 'Sin configurar'}</div>
 			</div>
 			${MENU_DIARIO.map(enlace).join('')}
 			<hr>
@@ -80,7 +80,7 @@ const App = {
 
 		// En los equipos de prueba, una franja amarilla arriba de todo
 		const franja = document.getElementById('franja-prueba');
-		franja.textContent = cfg.prueba ? `MODO PRUEBA · Equipo ${cfg.equipo} · estas ventas no cuentan` : '';
+		franja.textContent = cfg.prueba ? `MODO PRUEBA · Caja ${cfg.equipo} · estas ventas no cuentan` : '';
 		franja.classList.toggle('oculto', !cfg.prueba);
 	},
 };
