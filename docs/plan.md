@@ -35,6 +35,8 @@ Dónde estamos y qué falta. Se actualiza cada vez que se termina algo o se toma
 | 4.5 | **Impresión en la app (ESC/POS):** al cobrar se imprimen ticket, corte, comanda y corte; reimprimir desde Pedidos; comprobante de retiro; indicador de impresora conectada; si falla, la venta se guarda y se puede reintentar | Pendiente |
 | 4.6 | **Interruptores centrales en la laptop:** Tickets Sí/No y Comandas Sí/No. Rigen al instante para todas las cajas, y cada caja muestra qué se está imprimiendo | Pendiente |
 
+> **Alcance del servidor en este proyecto:** es el **simple**. Sirve la app, reenvía las impresiones y guarda solo su configuración (interruptores, IP de la impresora). **No guarda ni centraliza ventas.**
+
 **Decisiones pendientes para la etapa 4:**
 - ¿Los interruptores valen para todas las cajas a la vez, o por caja?
 - ¿El comprobante de retiro se imprime siempre, o tiene su propio interruptor?
@@ -70,6 +72,8 @@ Para personas jóvenes que no conocen el proyecto: poco texto, muchas imágenes,
 ---
 
 ## 🗂️ Más adelante (fuera de este evento)
+
+- **Otro proyecto: servidor con datos centralizados.** El mismo servidor de impresión, pero que además **almacene y centralice la información de todas las terminales** (ventas, movimientos, cierres). **No se implementa en este repositorio**; acá se usa el servidor simple.
 
 - **Android en profundidad:** cómo se ejecuta la app ahí, uso sin conexión, ajuste de Chrome para tratar la dirección de la laptop como segura.
 - Comandas por sector (cocina, barra).
