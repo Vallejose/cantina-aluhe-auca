@@ -1,0 +1,82 @@
+# Plan de trabajo — Cantina Aluhe Auca
+
+Dónde estamos y qué falta. Se actualiza cada vez que se termina algo o se toma una decisión.
+
+**Uso previsto:** un evento chico, probablemente de un solo uso. Una laptop (Caja 1 y servidor) y una o dos tablets Android, con la posibilidad de sumar una tablet durante el evento. Una sola impresora térmica, conectada por red (Ethernet). Lo usan personas jóvenes que no conocen el proyecto: son usuarios, nada más.
+
+**Objetivo:** tomar pedidos, imprimir el ticket y la comanda, y al final saber cuánta plata se recaudó y cuánta comida se vendió.
+
+---
+
+## ✅ Hecho
+
+| | Qué |
+|---|---|
+| ✅ | **Etapa 1:** base de la app, configuración de la caja, artículos (nombre, categoría y precio obligatorios; costo opcional), medios de pago |
+| ✅ | **Etapa 2:** vender, cobrar (vuelto en efectivo), ticket y comanda con el mismo número, pedidos y anulación |
+| ✅ | **Etapa 3:** movimientos (fondo de caja, retiros con comprobante), cierre (ventas, costo, ganancia, arqueo), respaldo y restauración |
+| ✅ | **Exportaciones simplificadas:** Excel con 3 pestañas, 5 CSV y 2 JSON, sin filtros. La versión con filtros está guardada en `borradores/` |
+| ✅ | Cajas 1 a 7 de venta y 8 y 9 de prueba (con reseteo); "Caja" en lugar de "Equipo"; pantalla "Movimientos" |
+| ✅ | Menú con desplegable "Ajustes"; colores del grupo (azul marino y amarillo) |
+| ✅ | Repositorio en GitHub con documentación y capturas |
+
+---
+
+## 🔜 Lo que falta, en orden
+
+### Etapa 4 · Impresión por red, con la laptop como servidor
+
+| # | Paso | Estado |
+|---|---|---|
+| 4.1 | **Datos de la impresora:** marca, modelo y ancho del papel (58 u 80 mm) | ⏳ Falta tu respuesta |
+| 4.2 | **Prueba de la impresora en red, sin la app:** IP fija en el router; mandarle un texto de prueba; ver cómo corta y cómo salen la ñ y las tildes | Pendiente |
+| 4.3 | **Diseño en el lienzo:** pantalla "Impresión" (en la laptop) y pantalla "Sumar una caja" | Pendiente. Faltan decisiones (ver abajo) |
+| 4.4 | **Servidor en la laptop (Java):** sirve la app a las tablets por la red local y reenvía las impresiones a la impresora, de a una y en orden. Se arranca con `iniciar-cantina.bat` | Pendiente |
+| 4.5 | **Impresión en la app (ESC/POS):** al cobrar se imprimen ticket, corte, comanda y corte; reimprimir desde Pedidos; comprobante de retiro; indicador de impresora conectada; si falla, la venta se guarda y se puede reintentar | Pendiente |
+| 4.6 | **Interruptores centrales en la laptop:** Tickets Sí/No y Comandas Sí/No. Rigen al instante para todas las cajas, y cada caja muestra qué se está imprimiendo | Pendiente |
+
+**Decisiones pendientes para la etapa 4:**
+- ¿Los interruptores valen para todas las cajas a la vez, o por caja?
+- ¿El comprobante de retiro se imprime siempre, o tiene su propio interruptor?
+- ¿Tickets y comandas arrancan encendidos?
+
+### Etapa 5 · Sumar una caja en un minuto
+
+- **Código QR** en la laptop con la dirección de la app: la tablet nueva lo escanea y la abre.
+- **"Traer la carta de la laptop"** en la primera configuración, sin pasar archivos.
+- **Control de números de caja:** el servidor sabe qué números están en uso, avisa si se repite uno y sugiere el siguiente libre.
+
+### Etapa 6 · Consolidar todas las cajas en la laptop
+
+- Al final, cada tablet exporta su cierre. La laptop los junta y muestra **el total recaudado** (y por medio de pago) y **cuánto se vendió de cada artículo**, con un único Excel descargable.
+- Más adelante podría ser automático (cada tablet le manda su cierre a la laptop con un botón).
+
+### Etapa 7 · Documentación ágil para los usuarios
+
+Para personas jóvenes que no conocen el proyecto: poco texto, muchas imágenes, lenguaje simple.
+
+- **Tarjeta "Vender en 5 pasos"** (una página, para imprimir y dejar al lado de cada caja): tocar artículos, revisar, cobrar, entregar ticket, llevar la comanda.
+- **Guía rápida del encargado de caja:** abrir la caja (fondo), hacer un retiro, anular un pedido, cerrar y exportar.
+- **"Si algo falla":** qué hacer si no imprime, si se cortó la red o si la tablet se reinició. Plan B: la app sigue vendiendo y el número se anota a mano.
+- **Guía de armado** para el organizador: router, IP fijas, impresora, laptop e `iniciar-cantina.bat`, y cómo sumar una tablet.
+- **Ayuda dentro de la app:** un botón "?" en cada pantalla con 2 o 3 líneas y una imagen. A definir.
+
+### Etapa 8 · Ensayo general y preparación del evento
+
+- Ensayo con la laptop, las tablets y la impresora reales, usando las cajas de prueba 8 y 9: 15 a 20 ventas, una anulación, un retiro, exportar y consolidar. Después, resetear las cajas de prueba.
+- **Dejar todo configurado antes:** red, IP fijas, laptop y una tablet.
+- **Lista para el día:** fondo de caja en cada caja, cargadores, rollos de papel, respaldo a mitad del evento.
+
+---
+
+## 🗂️ Más adelante (fuera de este evento)
+
+- **Android en profundidad:** cómo se ejecuta la app ahí, uso sin conexión, ajuste de Chrome para tratar la dirección de la laptop como segura.
+- Comandas por sector (cocina, barra).
+- Importar artículos desde Excel o CSV.
+- Otras exportaciones o filtros (hay un borrador en `borradores/exportaciones-con-filtros/`).
+
+## ❌ Descartado para este proyecto
+
+- **GitHub Pages:** queda para otro proyecto. La app se sirve desde la laptop.
+- Impresión con diálogo de Windows o con la app RawBT: se eligió impresión directa a través del servidor de la laptop.

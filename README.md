@@ -11,21 +11,18 @@ Es una PWA: funciona en Windows y Android, se instala desde el navegador y
 
 ## Estado
 
+👉 **[Plan de trabajo](docs/plan.md):** qué está hecho, qué falta y en qué orden.
+
 | Etapa | Contenido | Estado |
 |---|---|---|
 | 1 | Base, configuración de la caja, artículos, medios de pago | ✅ Lista |
 | 2 | Vender, cobrar, ticket, comanda, pedidos y anulación | ✅ Lista |
 | 3 | Movimientos (fondo y retiros), cierre, exportaciones y respaldo | ✅ Lista |
-| 4 | Prueba instalada en Windows y Android | Pendiente |
-
-## Pendientes para más adelante
-
-- Dónde publicarla (necesita `https` para instalarla en Android; opción: GitHub Pages).
-- Impresión de tickets, comandas y comprobantes de retiro.
-- Consolidar los cierres exportados de todas las cajas en un documento único.
-- Comandas divididas por sector (cocina, barra).
-- **Formato de importación de artículos** (por ejemplo desde Excel o CSV).
-  Hoy "Importar carta" solo acepta el `.json` que genera "Exportar carta".
+| 4 | Impresión por red, con la laptop como servidor | 🔜 Siguiente |
+| 5 | Sumar una caja en un minuto (QR, carta desde la laptop) | Pendiente |
+| 6 | Consolidar todas las cajas en la laptop | Pendiente |
+| 7 | Documentación ágil para los usuarios | Pendiente |
+| 8 | Ensayo general y preparación del evento | Pendiente |
 
 ## Probarla en esta PC
 
@@ -37,8 +34,8 @@ Usa el servidor web que viene con Java (`jwebserver`, Java 18 o superior).
 > Los datos quedan guardados en el navegador **para esa dirección exacta**.
 > Abrila siempre en `http://localhost:8080` y con el mismo navegador, o vas a ver la app vacía.
 
-Para instalarla en Android hace falta publicarla en una dirección `https`
-(pendiente: GitHub Pages u otra opción).
+Durante el evento, la laptop va a hacer de servidor: las tablets van a abrir la app
+desde la laptop por la red local (etapa 4).
 
 ## Numeración
 

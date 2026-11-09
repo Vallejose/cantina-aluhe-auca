@@ -124,17 +124,6 @@ Exporta todo lo de la caja, sin los pedidos anulados (que tienen su propia tabla
 
 Además: la carta también se exporta desde Artículos, y el respaldo completo desde Ajustes › Configuración.
 
-## Para más adelante
+## Plan de trabajo
 
-- **Publicación:** dónde se aloja la app para instalarla (necesita https; opción: GitHub Pages).
-- **Impresión** de tickets, comandas y comprobantes de retiro (en análisis: USB directo, Bluetooth o printer hub).
-- **Consolidación:** juntar los cierres exportados de todas las cajas en un documento único.
-- **Comandas por sector** (cocina, barra), si hace falta.
-- **Formato de importación de artículos** (por ejemplo desde Excel o CSV).
-
-## Etapas
-
-1. ✅ Base de la app, configuración, artículos y medios de pago.
-2. ✅ Vender, cobrar, ticket, comanda, pedidos y anulación.
-3. ✅ Movimientos, comprobante de retiro, cierre, exportaciones y respaldo.
-4. Prueba instalándola en Windows y en Android.
+Lo que falta y en qué orden está en **[plan.md](plan.md)**.
