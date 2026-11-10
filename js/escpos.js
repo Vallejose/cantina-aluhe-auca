@@ -155,6 +155,36 @@ const EscPos = (() => {
 		return p.cortar().bytes();
 	}
 
+	/**
+	 * Resumen del día: ventas por artículo (cantidad) y por medio de pago (monto).
+	 * `titulo`: "RESUMEN · CAJA 2" o "TOTAL DE LAS CAJAS"; `detalle`: renglón de abajo.
+	 */
+	function resumen(r, cfg, titulo, detalle) {
+		const o = Resumen.ordenado(r);
+		const p = new Papel();
+		p.centro().negrita().parrafo(nombreCantina(cfg)).tamano(1, 2).parrafo(titulo).tamano(1).negrita(false);
+		if (r.prueba) p.negrita().linea('*** PRUEBA ***').negrita(false);
+		if (detalle) p.parrafo(detalle);
+		p.linea(Util.fechaHora(new Date().toISOString()));
+		p.izquierda().separador();
+
+		p.negrita().linea('VENTAS POR ARTÍCULO').negrita(false);
+		p.fila('Artículo', 'Cant.');
+		o.porArticulo.forEach(a => p.fila(a.nombre, String(a.cantidad)));
+		if (!o.porArticulo.length) p.linea('Sin ventas');
+		p.linea('-'.repeat(ANCHO));
+		p.negrita().fila('TOTAL', String(o.totalArticulos)).negrita(false);
+		p.separador();
+
+		p.negrita().linea('VENTAS POR MEDIO DE PAGO').negrita(false);
+		p.fila('Medio', 'Monto');
+		o.porMedio.forEach(m => p.fila(m.nombre, monto(m.monto)));
+		if (!o.porMedio.length) p.linea('Sin ventas');
+		p.linea('-'.repeat(ANCHO));
+		p.negrita().tamano(1, 2).fila('TOTAL', '$ ' + monto(o.totalMonto)).tamano(1).negrita(false);
+		return p.cortar().bytes();
+	}
+
 	/** Hoja de prueba: para ver tildes, ñ, tamaños y el corte */
 	function prueba(cfg, caja) {
 		const p = new Papel();
@@ -172,5 +202,5 @@ const EscPos = (() => {
 		return p.cortar().bytes();
 	}
 
-	return { ANCHO, codificar, envolver, ticket, comanda, comprobante, prueba, Papel };
+	return { ANCHO, codificar, envolver, ticket, comanda, comprobante, resumen, prueba, Papel };
 })();

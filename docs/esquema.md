@@ -25,8 +25,9 @@ Elegir artículos → observaciones → cobrar (un medio de pago) → **ticket +
 | 4 | Ticket y comanda | Ticket con precios para el cliente; comanda sin precios para la cocina; mismo número. Se imprimen solos; si falla, Reintentar o Seguir sin imprimir |
 | 5 | Pedidos | Lista con búsqueda y filtros, volver a ver o reimprimir ticket o comanda, anular |
 | 6 | Movimientos | Entradas y salidas de caja con comprobante numerado (se ve o se imprime), lo que debería haber en la caja |
-| 7 | Cierre › Resumen | Ventas, costo y ganancia; por medio de pago y por artículo; arqueo de efectivo |
+| 7 | Cierre › Resumen | Imprimir resumen de la caja y Mandar a la laptop; ventas, costo y ganancia; por medio de pago y por artículo; arqueo de efectivo |
 | 8 | Cierre › Exportaciones | Excel con 3 pestañas, 5 tablas CSV y 2 archivos JSON |
+| 8b | Cierre › Todas las cajas | Solo en la laptop: suma lo que mandaron las tablets (artículos y medios de pago) e imprime el total |
 | 9 | Artículos | Nombre, categoría y precio (obligatorios), costo opcional; ocultar; exportar e importar la carta |
 | 10 | Medios de pago | Efectivo (calcula vuelto), otros, y sin cargo (no suma dinero) |
 | 11 | Impresión | Interruptores Tickets y Comandas (para todas las cajas, solo desde la laptop), impresora, prueba, cajas conectadas, últimas impresiones |
@@ -63,6 +64,9 @@ Elegir artículos → observaciones → cobrar (un medio de pago) → **ticket +
 
 ### 11 · Impresión
 ![Impresión](capturas/11-impresion.png)
+
+### Cierre › Todas las cajas (laptop)
+![Todas las cajas](capturas/13-todas-las-cajas.png)
 
 ### Si no sale la impresión
 ![No salió la impresión](capturas/12-no-salio-la-impresion.png)

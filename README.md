@@ -49,6 +49,9 @@ y quedan guardados en `servidor/cantina.properties`. **No guarda ventas**: cada 
 Si la impresión falla, la venta ya está guardada: se puede *Reintentar* o *Seguir sin imprimir*.
 Desde **Pedidos** se reimprime el ticket o la comanda de cualquier pedido.
 
+**Al final del día:** cada caja imprime su resumen desde **Cierre** (por artículo y por medio de pago) y toca
+**Mandar a la laptop**. En la laptop, **Cierre › Todas las cajas** suma todo e imprime el total.
+
 > Los datos quedan guardados en el navegador **para esa dirección exacta**.
 > Abrila siempre con la misma dirección y el mismo navegador, o vas a ver la app vacía.
 > Por eso conviene que la laptop tenga **IP fija** en el router.
@@ -100,6 +103,7 @@ js/pantallas/*.js        una pantalla por archivo
 js/documentos.js         ticket, comanda y comprobantes de caja (en pantalla)
 js/escpos.js             ticket y comanda para la impresora térmica (ESC/POS, 80 mm)
 js/impresion.js          habla con el servidor de la laptop: imprimir, reintentar, interruptores
+js/resumen.js            resumen del día por caja y total de todas las cajas
 js/exportaciones.js      tablas de exportación, CSV y Excel
 js/xlsx.js               generador de archivos Excel sin librerías
 sw.js                    permite abrirla sin internet

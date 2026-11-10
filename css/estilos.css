@@ -640,3 +640,12 @@ button.articulo b { overflow-wrap: anywhere; hyphens: auto; }
 	.ventana-botones { margin-top: 14px; }
 	.marca { padding-bottom: 10px; }
 }
+
+/* ------------------------------------------ Cierre: fin del día */
+
+.fin-del-dia { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-bottom: 18px; max-width: 1100px; }
+.fin-del-dia .tarjeta { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; padding: 16px 18px; }
+.fin-del-dia h2 { margin: 0; }
+button.oscuro { background: var(--marca); border-color: var(--marca); color: #fff; font-weight: 700; }
+button.oscuro:hover:not(:disabled) { border-color: var(--acento); }
+.enviado { color: var(--ok); font-weight: 700; }

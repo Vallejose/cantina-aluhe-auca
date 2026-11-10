@@ -58,7 +58,7 @@ Dónde estamos y qué falta. Se actualiza cada vez que se termina algo o se toma
 | ✅ | Movimientos: botones **Entrada de caja** y **Salida de caja**; los dos con comprobante numerado; **Imprimir** en cada fila | Listo |
 | ✅ | Comprobantes **sin firmas** | Listo |
 | ✅ | Cierre: la tabla por artículo ya no muestra "N sin cargo" | Listo |
-| 🖍️ | **Resumen impreso del día** por caja (por artículo y por medio de pago, con totales) y **total de todas las cajas**: cada tablet usa "Mandar a la laptop" desde Cierre | Diseño en el lienzo, falta tu visto bueno |
+| ✅ | **Resumen impreso del día** por caja (por artículo y por medio de pago, con totales) y **total de todas las cajas** en la laptop (Cierre › Todas las cajas): cada tablet usa "Mandar a la laptop" | Listo (vistas 13 y 14 del lienzo) |
 
 ### Etapa 5 · Sumar una caja en un minuto
 
@@ -67,6 +67,8 @@ Dónde estamos y qué falta. Se actualiza cada vez que se termina algo o se toma
 - **Control de números de caja:** el servidor sabe qué números están en uso, avisa si se repite uno y sugiere el siguiente libre.
 
 ### Etapa 6 · Consolidar todas las cajas en la laptop
+
+> Ya hay una parte hecha: el **total impreso** de todas las cajas (artículos y medios de pago) con "Mandar a la laptop". Falta, si se quiere, un Excel único consolidado.
 
 - Al final, cada tablet exporta su cierre. La laptop los junta y muestra **el total recaudado** (y por medio de pago) y **cuánto se vendió de cada artículo**, con un único Excel descargable.
 - Más adelante podría ser automático (cada tablet le manda su cierre a la laptop con un botón).

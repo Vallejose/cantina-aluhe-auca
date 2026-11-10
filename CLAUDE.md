@@ -74,6 +74,10 @@ en el mismo commit.
   dirección de origen: localhost). La reimpresión desde Pedidos sale aunque el interruptor esté apagado.
   Los comprobantes de **entrada y salida de caja** se imprimen solo con el botón "Imprimir" de
   Movimientos (no salen solos, no dependen de los interruptores) y no llevan firmas.
+- **Resumen del día** (`js/resumen.js`): cada caja imprime el suyo desde Cierre y lo manda a la laptop
+  ("Mandar a la laptop" → `POST /api/cierre`). El servidor guarda **solo esos totales** (por artículo y
+  por medio de pago; el último de cada caja) en `servidor/cierres/`. La laptop los suma en
+  Cierre › Todas las cajas (las de prueba solo con las de prueba). "Sin cargo" no sale en medios de pago.
 - Ver los pasos y las decisiones en `docs/plan.md`.
 
 ## Cómo probar los cambios

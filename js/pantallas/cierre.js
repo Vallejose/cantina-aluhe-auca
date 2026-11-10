@@ -23,10 +23,13 @@ const PantallaCierre = {
 		return `<b>${Util.fechaCorta(desde)}</b> a <b>${Util.fechaCorta(hasta)}</b>`;
 	},
 
-	pestana: 'resumen', // resumen | exportaciones
+	pestana: 'resumen', // resumen | exportaciones | cajas (solo en la laptop)
 
 	async dibujar(c) {
 		const k = await Datos.calcularCierre();
+		if (!Impresion.estado) await Impresion.consultar();
+		const laptop = !!Impresion.estado?.esLaptop;
+		if (this.pestana === 'cajas' && !laptop) this.pestana = 'resumen';
 
 		const rango = k.desdeNumero == null
 			? 'Todavía no hay pedidos'
@@ -39,15 +42,18 @@ const PantallaCierre = {
 			<div class="pestanas" role="tablist" aria-label="Secciones del cierre">
 				<button role="tab" id="tab-resumen" aria-controls="panel-cierre">Resumen</button>
 				<button role="tab" id="tab-exportaciones" aria-controls="panel-cierre">Exportaciones</button>
+				${laptop ? '<button role="tab" id="tab-cajas" aria-controls="panel-cierre">Todas las cajas</button>' : ''}
 			</div>
 			<div id="panel-cierre" role="tabpanel"></div>`;
 
 		const mostrar = async () => {
 			c.querySelectorAll('[role=tab]').forEach(t => t.setAttribute('aria-selected', t.id === 'tab-' + this.pestana));
 			const panel = c.querySelector('#panel-cierre');
-			if (this.pestana === 'resumen') this.dibujarResumen(panel, k);
+			if (this.pestana === 'resumen') await this.dibujarResumen(panel, k, laptop);
+			else if (this.pestana === 'cajas') await this.dibujarCajas(panel, k);
 			else await this.dibujarExportaciones(panel, k);
 		};
+		if (laptop) c.querySelector('#tab-cajas').onclick = () => { this.pestana = 'cajas'; mostrar(); };
 		c.querySelector('#tab-resumen').onclick = () => { this.pestana = 'resumen'; mostrar(); };
 		c.querySelector('#tab-exportaciones').onclick = () => { this.pestana = 'exportaciones'; mostrar(); };
 		await mostrar();
@@ -55,9 +61,30 @@ const PantallaCierre = {
 
 	// ---------------------------------------------------------------- Resumen
 
-	dibujarResumen(panel, k) {
+	async dibujarResumen(panel, k, laptop) {
 		const d = Util.dinero;
+		const servidor = Impresion.hayServidor();
+		const envio = await Resumen.ultimoEnvio();
+		const estadoEnvio = envio
+			? `<span class="enviado">✓ Enviado a las ${Util.hora(envio.fecha)} (${envio.pedidos} ${envio.pedidos === 1 ? 'pedido' : 'pedidos'})</span>
+				<small class="suave">Si vendés algo después, mandalo de nuevo: reemplaza al anterior.</small>`
+			: '<small class="suave">Al final del día, para que la laptop sume todas las cajas.</small>';
 		panel.innerHTML = `
+			<div class="fin-del-dia">
+				<div class="tarjeta">
+					<h2>Esta caja</h2>
+					<button id="imprimir-resumen" class="principal grande" ${servidor ? '' : 'disabled'}>Imprimir resumen de la caja</button>
+					<small class="suave">Ventas por artículo y por medio de pago, con totales.</small>
+				</div>
+				<div class="tarjeta">
+					<h2>Total de todas las cajas</h2>
+					${laptop
+						? `<button id="ver-cajas" class="oscuro grande">Ver todas las cajas</button>
+							<small class="suave">Esta laptop se suma sola. Las tablets mandan lo suyo desde su Cierre.</small>`
+						: `<button id="mandar" class="oscuro grande" ${servidor && k.pedidosValidos ? '' : 'disabled'}>Mandar a la laptop</button>${estadoEnvio}`}
+				</div>
+			</div>
+			${servidor ? '' : '<p class="ayuda">Esta caja no está conectada a la laptop: no se puede imprimir ni mandar.</p>'}
 			<div class="indicadores">
 				<div class="indicador"><span>Ventas</span><b>${d(k.ventas)}</b><small>${k.pedidosValidos} pedidos válidos</small></div>
 				<div class="indicador"><span>Costo</span><b>${d(k.costo)}</b><small>incluye lo entregado sin cargo</small></div>
@@ -112,6 +139,100 @@ const PantallaCierre = {
 						La cantidad incluye lo entregado sin cargo.</p>
 				</section>
 			</div>`;
+
+		panel.querySelector('#imprimir-resumen').onclick = async ev => {
+			const r = await this.conEspera(ev.target, () => Resumen.imprimir(Resumen.deCaja(k), `RESUMEN · CAJA ${k.equipo}`,
+				k.desdeNumero == null ? 'Sin pedidos' : k.desdeNumero === k.hastaNumero ? `Pedido ${k.desdeNumero}` : `Pedidos ${k.desdeNumero} a ${k.hastaNumero}`));
+			this.avisarImpresion(r, 'Resumen impreso');
+		};
+		const mandar = panel.querySelector('#mandar');
+		if (mandar) mandar.onclick = async () => {
+			const r = await this.conEspera(mandar, () => Resumen.mandar(Resumen.deCaja(k)));
+			if (r.estado === 'recibido') { Util.avisar('La laptop recibió el resumen'); this.dibujarResumen(panel, k, laptop); }
+			else Util.avisar(r.error || 'No se pudo mandar', 'error');
+		};
+		const ver = panel.querySelector('#ver-cajas');
+		if (ver) ver.onclick = () => document.getElementById('tab-cajas').click();
+	},
+
+	/** Deshabilita el botón mientras trabaja */
+	async conEspera(boton, tarea) {
+		const texto = boton.textContent;
+		boton.disabled = true;
+		boton.textContent = 'Un momento…';
+		try { return await tarea(); } finally { boton.disabled = false; boton.textContent = texto; }
+	},
+
+	avisarImpresion(r, textoOk) {
+		if (r.estado === 'impreso') Util.avisar(textoOk);
+		else if (r.estado === 'esperando') Util.avisar('En la fila de la impresora');
+		else if (r.estado === 'sin-servidor') Util.avisar('Esta caja no está conectada a la laptop', 'error');
+		else Util.avisar(r.error || 'No salió la impresión', 'error');
+	},
+
+	// ------------------------------------------- Todas las cajas (solo laptop)
+
+	async dibujarCajas(panel, k) {
+		const propio = Resumen.deCaja(k);
+		// Las cajas de prueba se suman solo entre ellas, y las de venta solo entre ellas
+		const recibidos = (await Resumen.recibidos())
+			.filter(x => x.caja !== k.equipo && !!x.datos.prueba === !!k.prueba);
+		const conectadas = (Impresion.estado?.cajas || [])
+			.map(c => c.caja)
+			.filter(n => n !== k.equipo && Datos.esPrueba(n) === !!k.prueba && !recibidos.some(x => x.caja === n));
+
+		const total = Resumen.combinar([propio, ...recibidos.map(x => x.datos)]);
+		const o = Resumen.ordenado(total);
+		const nombresCajas = total.cajas.length === 1 ? `Caja ${total.cajas[0]}`
+			: 'Cajas ' + total.cajas.slice(0, -1).join(', ') + ' y ' + total.cajas.at(-1);
+
+		const tarjetaCaja = (n, texto, falta) => `
+			<div class="tarjeta caja-conectada ${falta ? 'sin-senal' : ''}"><b>Caja ${n}</b><span>${texto}</span></div>`;
+
+		panel.innerHTML = `
+			<p class="ayuda sin-margen">Cada tablet manda lo suyo desde su Cierre con <b>Mandar a la laptop</b>. Esta laptop se suma sola.</p>
+			<div class="grilla-cajas" style="margin: 14px 0">
+				${tarjetaCaja(k.equipo, 'Esta laptop · al día')}
+				${recibidos.map(x => tarjetaCaja(x.caja, `Recibida ${x.recibido} · ${x.datos.pedidos} pedidos`)).join('')}
+				${conectadas.map(n => tarjetaCaja(n, 'Conectada, no mandó', true)).join('')}
+			</div>
+			<div class="indicadores">
+				<div class="indicador destacado"><span>Total recaudado</span><b>${Util.dinero(o.totalMonto)}</b><small>${nombresCajas}</small></div>
+				<div class="indicador"><span>Artículos vendidos</span><b>${o.totalArticulos}</b><small>${total.pedidos} pedidos</small></div>
+			</div>
+			<div class="acciones" style="margin-bottom: 8px">
+				<button id="imprimir-total" class="principal grande" ${Impresion.hayServidor() ? '' : 'disabled'}>Imprimir total de las cajas</button>
+				<button id="actualizar">Actualizar</button>
+			</div>
+			${conectadas.length ? `<p class="alerta" style="max-width: 640px">Falta${conectadas.length > 1 ? 'n' : ''} la${conectadas.length > 1 ? 's' : ''} caja${conectadas.length > 1 ? 's' : ''} ${conectadas.join(', ')}: si imprimís ahora, no ${conectadas.length > 1 ? 'las' : 'la'} incluye.</p>` : ''}
+			<div class="columnas" style="margin-top: 16px">
+				<section class="ancho">
+					<h2 class="subtitulo">Por artículo</h2>
+					<div class="tarjeta sin-relleno">
+						<table class="tabla">
+							<thead><tr><th>Artículo</th><th class="num">Cantidad</th></tr></thead>
+							<tbody>${o.porArticulo.map(a => `<tr><td>${Util.esc(a.nombre)}</td><td class="num">${a.cantidad}</td></tr>`).join('') || '<tr><td colspan="2" class="suave">Sin ventas</td></tr>'}</tbody>
+							<tfoot><tr><td>Total</td><td class="num">${o.totalArticulos}</td></tr></tfoot>
+						</table>
+					</div>
+				</section>
+				<section class="columna-lateral">
+					<h2 class="subtitulo">Por medio de pago</h2>
+					<div class="tarjeta sin-relleno">
+						<table class="tabla">
+							<thead><tr><th>Medio</th><th class="num">Monto</th></tr></thead>
+							<tbody>${o.porMedio.map(m => `<tr><td>${Util.esc(m.nombre)}</td><td class="num">${Util.dinero(m.monto)}</td></tr>`).join('') || '<tr><td colspan="2" class="suave">Sin ventas</td></tr>'}</tbody>
+							<tfoot><tr><td>Total</td><td class="num">${Util.dinero(o.totalMonto)}</td></tr></tfoot>
+						</table>
+					</div>
+				</section>
+			</div>`;
+
+		panel.querySelector('#imprimir-total').onclick = async ev => {
+			const r = await this.conEspera(ev.target, () => Resumen.imprimir(total, 'TOTAL DE LAS CAJAS', nombresCajas));
+			this.avisarImpresion(r, 'Total de las cajas impreso');
+		};
+		panel.querySelector('#actualizar').onclick = () => this.dibujarCajas(panel, k);
 	},
 
 	// ----------------------------------------------------------- Exportaciones

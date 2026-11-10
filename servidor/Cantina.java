@@ -19,6 +19,11 @@
  *   POST /api/reintentar?id=N       vuelve a mandar una impresión que no salió
  *   POST /api/interruptores?tickets=1&comandas=0   solo desde la laptop
  *   POST /api/impresora?ip=…&puerto=9100           solo desde la laptop
+ *   POST /api/cierre?caja=N         cuerpo = resumen del día de esa caja (JSON); reemplaza al anterior
+ *   GET  /api/cierres               los resúmenes recibidos: [{caja, recibido, datos}]
+ *
+ * Los resúmenes (solo totales por artículo y por medio de pago, no las ventas)
+ * se guardan en servidor/cierres/ para no perderlos si se reinicia la laptop.
  */
 
 import com.sun.net.httpserver.HttpExchange;
@@ -57,6 +62,8 @@ public class Cantina {
 	static final Deque<Trabajo> ultimas = new ConcurrentLinkedDeque<>();
 	static final Map<Integer, Caja> cajas = new ConcurrentHashMap<>();
 	static final Object impresora = new Object(); // un solo envío a la impresora a la vez
+	static final Map<Integer, String[]> cierres = new ConcurrentHashMap<>(); // caja -> {hora, json}
+	static Path carpetaCierres;
 
 	/** Una impresión: lo que mandó una caja, ya filtrado por los interruptores */
 	static class Trabajo {
@@ -88,6 +95,8 @@ public class Cantina {
 		carpetaApp = buscarCarpetaApp();
 		archivoConfig = carpetaApp.resolve("servidor").resolve("cantina.properties");
 		leerConfig();
+		carpetaCierres = carpetaApp.resolve("servidor").resolve("cierres");
+		leerCierres();
 
 		HttpServer servidor;
 		try {
@@ -161,6 +170,33 @@ public class Cantina {
 					guardarConfig();
 					System.out.println(hora() + "  Tickets " + (tickets ? "SÍ" : "NO") + " · Comandas " + (comandas ? "SÍ" : "NO"));
 					responder(x, 200, estadoJson(true));
+				}
+				case "/api/cierre" -> {
+					if (!post) { responder(x, 405, error("Usá POST")); return; }
+					int caja = entero(q.get("caja"), 0);
+					byte[] cuerpo = x.getRequestBody().readAllBytes();
+					String json = new String(cuerpo, StandardCharsets.UTF_8).trim();
+					if (caja < 1 || caja > 9 || cuerpo.length > 2_000_000 || !json.startsWith("{") || !json.contains("\"cantina-resumen\"")) {
+						responder(x, 400, error("Resumen mal armado"));
+						return;
+					}
+					anotarCaja(caja, desdeLaptop);
+					String hora = hora();
+					cierres.put(caja, new String[] { hora, json });
+					try {
+						Files.createDirectories(carpetaCierres);
+						Files.writeString(carpetaCierres.resolve("caja-" + caja + ".json"), json, StandardCharsets.UTF_8);
+					} catch (IOException e) {
+						System.out.println("No se pudo guardar el resumen de la caja " + caja + ": " + e.getMessage());
+					}
+					System.out.println(hora + "  Caja " + caja + " · mandó su resumen del día");
+					responder(x, 200, "{\"estado\":\"recibido\",\"recibido\":" + texto(hora) + "}");
+				}
+				case "/api/cierres" -> {
+					StringJoiner lista = new StringJoiner(",", "[", "]");
+					cierres.entrySet().stream().sorted(Map.Entry.comparingByKey()).forEach(e ->
+							lista.add("{\"caja\":" + e.getKey() + ",\"recibido\":" + texto(e.getValue()[0]) + ",\"datos\":" + e.getValue()[1] + "}"));
+					responder(x, 200, lista.toString());
 				}
 				case "/api/impresora" -> {
 					if (!post) { responder(x, 405, error("Usá POST")); return; }
@@ -425,6 +461,20 @@ public class Cantina {
 		puertoImpresora = entero(p.getProperty("impresora.puerto"), 9100);
 		tickets = !"no".equals(p.getProperty("tickets", "si"));
 		comandas = !"no".equals(p.getProperty("comandas", "si"));
+	}
+
+	static void leerCierres() {
+		if (!Files.isDirectory(carpetaCierres)) return;
+		for (int caja = 1; caja <= 9; caja++) {
+			Path archivo = carpetaCierres.resolve("caja-" + caja + ".json");
+			try {
+				if (!Files.exists(archivo)) continue;
+				String hora = LocalTime.ofInstant(Files.getLastModifiedTime(archivo).toInstant(), java.time.ZoneId.systemDefault()).format(HORA);
+				cierres.put(caja, new String[] { hora, Files.readString(archivo, StandardCharsets.UTF_8) });
+			} catch (IOException e) {
+				System.out.println("No se pudo leer " + archivo + ": " + e.getMessage());
+			}
+		}
 	}
 
 	static synchronized void guardarConfig() {
