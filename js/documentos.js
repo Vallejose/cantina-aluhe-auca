@@ -70,30 +70,45 @@ const Documentos = (() => {
 			</div>`;
 	}
 
-	/** Comprobante de retiro de efectivo, con lugar para dos firmas */
+	const nombreMovimiento = m => m.tipo === 'fondo' ? 'Entrada de caja' : 'Salida de caja';
+
+	/** Comprobante de una entrada o salida de efectivo */
 	function comprobante(m, cfg) {
 		return `
 			<div class="papel">
 				${m.anulado ? `<div class="sello-anulado">ANULADO ${Util.fechaHora(m.anuladoEn)}</div>` : ''}
 				<div class="centro negrita">${Util.esc((cfg.nombreCantina || Datos.NOMBRE_POR_DEFECTO).toUpperCase())}</div>
-				<div class="centro">COMPROBANTE DE RETIRO</div>
+				<div class="centro">COMPROBANTE · ${nombreMovimiento(m).toUpperCase()}</div>
 				${m.prueba ? '<div class="centro negrita">*** PRUEBA – NO VÁLIDO ***</div>' : ''}
-				<div class="centro numero-mediano">N.º ${Util.esc(m.comprobante)}</div>
+				${m.comprobante ? `<div class="centro numero-mediano">N.º ${Util.esc(m.comprobante)}</div>` : ''}
 				<div class="centro">${Util.fechaHora(m.fecha)} · Caja ${m.equipo}</div>
 				<div class="corte"></div>
 				<div class="fila negrita total"><span>MONTO</span><span>${Util.dinero(m.monto)}</span></div>
-				<div>Motivo: ${Util.esc(m.motivo)}</div>
-				${m.quien ? `<div>Retiró: ${Util.esc(m.quien)}</div>` : ''}
-				<div class="corte"></div>
-				<div class="firma">Firma de quien retira</div>
-				<div class="firma">Firma de quien entrega</div>
+				${m.motivo ? `<div>Motivo: ${Util.esc(m.motivo)}</div>` : ''}
+				${m.quien ? `<div>${m.tipo === 'fondo' ? 'Puso' : 'Retiró'}: ${Util.esc(m.quien)}</div>` : ''}
 			</div>`;
 	}
 
 	async function mostrarComprobante(m) {
 		const cfg = await Datos.configuracion();
-		Util.modal(`Comprobante de retiro ${m.comprobante}`, `<div class="papeles">${comprobante(m, cfg)}</div>`,
-			[{ texto: 'Cerrar', clase: 'principal' }]);
+		const botones = [{ texto: 'Cerrar', clase: 'principal' }];
+		if (Impresion.hayServidor() && !m.anulado)
+			botones.unshift({ texto: 'Imprimir', accion: async capa => { await imprimirComprobante(m, capa.querySelector('.ventana-botones button')); return false; } });
+		Util.modal(`Comprobante ${m.comprobante || ''} · ${nombreMovimiento(m)}`, `<div class="papeles">${comprobante(m, cfg)}</div>`, botones);
+	}
+
+	/** Manda el comprobante a la impresora (sale siempre, no depende de los interruptores) */
+	async function imprimirComprobante(m, boton) {
+		const texto = boton?.textContent;
+		if (boton) { boton.disabled = true; boton.textContent = 'Imprimiendo…'; }
+		const cfg = await Datos.configuracion();
+		const r = await Impresion.enviar([{ tipo: 'comprobante', bytes: EscPos.comprobante(m, cfg) }],
+			{ caja: m.equipo, que: `Comprobante ${m.comprobante || ''} (${nombreMovimiento(m).toLowerCase()})` });
+		if (boton) { boton.disabled = false; boton.textContent = texto; }
+		if (r.estado === 'impreso') Util.avisar(`Comprobante ${m.comprobante || ''} impreso`);
+		else if (r.estado === 'esperando') Util.avisar('En la fila de la impresora');
+		else if (r.estado === 'sin-servidor') Util.avisar('Esta caja no está conectada a la laptop', 'error');
+		else Util.avisar(r.error || 'No salió la impresión', 'error');
 	}
 
 	/** Ventana con el ticket o la comanda de un pedido ya hecho */
@@ -119,5 +134,5 @@ const Documentos = (() => {
 			`<div class="papeles">${cual === 'ticket' ? ticket(pedido, cfg) : comanda(pedido)}</div>`, botones);
 	}
 
-	return { ticket, comanda, comprobante, mostrar, mostrarComprobante };
+	return { ticket, comanda, comprobante, mostrar, mostrarComprobante, imprimirComprobante, nombreMovimiento };
 })();

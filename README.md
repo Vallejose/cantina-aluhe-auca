@@ -18,7 +18,7 @@ Es una PWA: funciona en Windows y Android, se instala desde el navegador y
 |---|---|---|
 | 1 | Base, configuración de la caja, artículos, medios de pago | ✅ Lista |
 | 2 | Vender, cobrar, ticket, comanda, pedidos y anulación | ✅ Lista |
-| 3 | Movimientos (fondo y retiros), cierre, exportaciones y respaldo | ✅ Lista |
+| 3 | Movimientos (entradas y salidas de caja), cierre, exportaciones y respaldo | ✅ Lista |
 | 4 | Impresión por red, con la laptop como servidor | ✅ Código listo · falta probar con la impresora real |
 | 5 | Sumar una caja en un minuto (QR, carta desde la laptop) | Pendiente |
 | 6 | Consolidar todas las cajas en la laptop | Pendiente |
@@ -97,7 +97,7 @@ js/db.js                 almacenamiento del dispositivo (IndexedDB)
 js/datos.js              reglas de negocio (validaciones, carta, reseteo)
 js/app.js                arranque y menú
 js/pantallas/*.js        una pantalla por archivo
-js/documentos.js         ticket, comanda y comprobante de retiro (en pantalla)
+js/documentos.js         ticket, comanda y comprobantes de caja (en pantalla)
 js/escpos.js             ticket y comanda para la impresora térmica (ESC/POS, 80 mm)
 js/impresion.js          habla con el servidor de la laptop: imprimir, reintentar, interruptores
 js/exportaciones.js      tablas de exportación, CSV y Excel

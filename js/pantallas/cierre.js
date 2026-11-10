@@ -85,9 +85,9 @@ const PantallaCierre = {
 					<div class="tarjeta sin-relleno">
 						<table class="tabla">
 							<tbody>
-								<tr><td>Fondo de caja</td><td class="num">${d(k.caja.fondo)}</td></tr>
+								<tr><td>Entradas de caja</td><td class="num">${d(k.caja.fondo)}</td></tr>
 								<tr><td>+ Ventas en efectivo</td><td class="num">${d(k.caja.ventasEfectivo)}</td></tr>
-								<tr><td>− Retiros (${k.caja.cantidadRetiros})</td><td class="num">${d(k.caja.retiros)}</td></tr>
+								<tr><td>− Salidas de caja (${k.caja.cantidadRetiros})</td><td class="num">${d(k.caja.retiros)}</td></tr>
 							</tbody>
 							<tfoot><tr><td>Debería haber en caja</td><td class="num">${d(k.caja.esperado)}</td></tr></tfoot>
 						</table>
@@ -100,7 +100,7 @@ const PantallaCierre = {
 						<table class="tabla">
 							<thead><tr><th>Artículo</th><th class="num">Cantidad</th><th class="num">Ventas</th><th class="num">Costo</th><th class="num">Ganancia</th></tr></thead>
 							<tbody>${k.porArticulo.map(a => `
-								<tr><td>${Util.esc(a.nombre)}${a.sinCargo ? ` <span class="etiqueta sincargo">${a.sinCargo} sin cargo</span>` : ''}</td>
+								<tr><td>${Util.esc(a.nombre)}</td>
 									<td class="num">${a.cantidad}</td><td class="num">${d(a.ventas)}</td><td class="num">${d(a.costo)}</td>
 									<td class="num ${a.ganancia < 0 ? 'negativo' : ''}">${d(a.ganancia)}</td></tr>`).join('')
 								|| '<tr><td colspan="5" class="suave">Sin ventas</td></tr>'}

@@ -139,6 +139,22 @@ const EscPos = (() => {
 		return p.cortar().bytes();
 	}
 
+	/** Comprobante de una entrada o salida de caja */
+	function comprobante(m, cfg) {
+		const p = new Papel();
+		p.centro().negrita().parrafo(nombreCantina(cfg)).negrita(false);
+		p.linea('COMPROBANTE');
+		p.negrita().tamano(2).linea(m.tipo === 'fondo' ? 'ENTRADA' : 'SALIDA').tamano(1).linea('DE CAJA').negrita(false);
+		if (m.prueba) p.negrita().linea('*** PRUEBA - NO VÁLIDO ***').negrita(false);
+		if (m.comprobante) p.linea(`N.º ${m.comprobante}`);
+		p.linea(`${Util.fechaHora(m.fecha)} · Caja ${m.equipo}`);
+		p.izquierda().separador();
+		p.negrita().tamano(1, 2).fila('MONTO', Util.dinero(m.monto)).tamano(1).negrita(false);
+		if (m.motivo) p.parrafo('Motivo: ' + m.motivo);
+		if (m.quien) p.parrafo((m.tipo === 'fondo' ? 'Puso: ' : 'Retiró: ') + m.quien);
+		return p.cortar().bytes();
+	}
+
 	/** Hoja de prueba: para ver tildes, ñ, tamaños y el corte */
 	function prueba(cfg, caja) {
 		const p = new Papel();
@@ -156,5 +172,5 @@ const EscPos = (() => {
 		return p.cortar().bytes();
 	}
 
-	return { ANCHO, codificar, envolver, ticket, comanda, prueba };
+	return { ANCHO, codificar, envolver, ticket, comanda, comprobante, prueba, Papel };
 })();

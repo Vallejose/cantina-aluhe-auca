@@ -42,12 +42,23 @@ Dónde estamos y qué falta. Se actualiza cada vez que se termina algo o se toma
 - Los interruptores Tickets y Comandas valen **para todas las cajas a la vez**.
 - Se cambian **solo desde la laptop** (Ajustes › Impresión). Las tablets solo ven el estado.
 - Al prender el servidor, los interruptores quedan **como estaban la última vez** (el servidor los guarda).
-- El **comprobante de retiro no se imprime**: queda solo en pantalla.
+- Comprobantes de **entrada y salida de caja**: se imprimen con el botón "Imprimir" de Movimientos, sin firmas (cambio del 10/11).
 - Si falla la impresión: botones **Reintentar** o **Seguir sin imprimir**. No reintenta solo.
 - **Reimprimir** desde Pedidos: ticket o comanda **por separado**.
 - La laptop **también vende**: es la Caja 1.
 - Papel de **80 mm**.
 - Sumar una caja (etapa 5): QR con la dirección, traer la carta de la laptop y avisar los números de caja en uso.
+
+### Etapa 4b · Ajustes después de la primera prueba (10/11)
+
+| | Qué | Estado |
+|---|---|---|
+| ✅ | Cobrar arranca **sin medio de pago elegido** (el campo de efectivo aparece al tocar Efectivo) | Listo |
+| ✅ | Tablets de **11 a 13 pulgadas** acostadas: menú y pedido más finos, ventanas compactas en pantallas bajas, nombres largos sin pisar el contador | Listo |
+| ✅ | Movimientos: botones **Entrada de caja** y **Salida de caja**; los dos con comprobante numerado; **Imprimir** en cada fila | Listo |
+| ✅ | Comprobantes **sin firmas** | Listo |
+| ✅ | Cierre: la tabla por artículo ya no muestra "N sin cargo" | Listo |
+| 🖍️ | **Resumen impreso del día** por caja (por artículo y por medio de pago, con totales) y **total de todas las cajas**: cada tablet usa "Mandar a la laptop" desde Cierre | Diseño en el lienzo, falta tu visto bueno |
 
 ### Etapa 5 · Sumar una caja en un minuto
 

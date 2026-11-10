@@ -54,7 +54,8 @@ en el mismo commit.
 - Menú: Vender, Pedidos, Movimientos, Cierre; y el desplegable "Ajustes" (Impresión, Artículos,
   Medios de pago, Configuración). Al pie, el indicador de la impresora.
 - Colores del grupo: azul marino `#1e3a5f` y amarillo `#f2b134` (variables en `css/estilos.css`).
-- Pantallas: notebook y tablet **en horizontal**.
+- Pantallas: notebook y tablet **en horizontal**, de 11 a 13 pulgadas (probado de 1024×600 a 1440×900).
+- En Cobrar no hay medio de pago elegido de entrada: se toca uno sí o sí.
 
 ## Impresión por red (etapa 4, código listo)
 
@@ -71,7 +72,8 @@ en el mismo commit.
   `js/pantallas/impresion.js` (Ajustes › Impresión). La API está documentada al principio de `Cantina.java`.
 - Los interruptores y la IP se cambian **solo desde la laptop** (el servidor lo controla por
   dirección de origen: localhost). La reimpresión desde Pedidos sale aunque el interruptor esté apagado.
-  El comprobante de retiro **no se imprime**.
+  Los comprobantes de **entrada y salida de caja** se imprimen solo con el botón "Imprimir" de
+  Movimientos (no salen solos, no dependen de los interruptores) y no llevan firmas.
 - Ver los pasos y las decisiones en `docs/plan.md`.
 
 ## Cómo probar los cambios

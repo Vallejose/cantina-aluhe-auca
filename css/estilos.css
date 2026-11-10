@@ -486,7 +486,6 @@ button.medio.elegido span { color: #d3dcea; }
 .tabla tfoot td { font-weight: 700; border-top: 2px solid var(--texto); border-bottom: 0; }
 
 .papel .numero-mediano { font-size: 26px; font-weight: 700; }
-.papel .firma { margin-top: 30px; border-top: 1px solid #111; text-align: center; font-size: 12px; }
 
 /* ------------------------------------------- Pantallas más angostas */
 
@@ -610,3 +609,34 @@ button.interruptor:disabled { opacity: .75; }
 .estado-fila { font-weight: 700; }
 .estado-fila.ok { color: var(--ok); }
 .estado-fila.mal { color: var(--peligro); }
+
+/* ------------------------------------- Tablets de 11 a 13 pulgadas, acostadas */
+
+/* Nombres largos de artículos: que corten antes del contador y no lo pisen */
+button.articulo b { overflow-wrap: anywhere; hyphens: auto; }
+/* El número de comprobante no se parte en dos renglones */
+.nro { white-space: nowrap; }
+
+/* Pantallas angostas (tablets de 11"): menú y pedido un poco más finos */
+@media (min-width: 861px) and (max-width: 1200px) {
+	.app { grid-template-columns: 180px 1fr; }
+	.menu { padding: 12px 8px; }
+	.menu a, .menu .ajustes summary { padding: 10px; }
+	.contenido { padding: 16px 18px 32px; }
+	.venta { grid-template-columns: minmax(0, 1fr) 330px; }
+	.venta-carta { padding: 16px 18px 32px; }
+	.grilla-articulos { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+}
+
+/* Pantallas bajas (con la barra de Chrome a la vista): ventanas más compactas */
+@media (max-height: 720px) {
+	.ventana { padding: 18px 20px; max-height: calc(100vh - 24px); }
+	.modal { padding: 12px; }
+	.ventana h2 { margin-bottom: 10px; }
+	.cobro-total { padding: 10px 16px; margin-bottom: 12px; }
+	.cobro-total b { font-size: 1.9rem; }
+	button.medio { min-height: 54px; }
+	.zona-efectivo { margin-top: 12px; gap: 10px 14px; }
+	.ventana-botones { margin-top: 14px; }
+	.marca { padding-bottom: 10px; }
+}

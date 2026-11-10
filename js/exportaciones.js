@@ -109,7 +109,7 @@ const Exportaciones = (() => {
 				{ titulo: 'Motivo', tipo: 'texto', ancho: 30 }, { titulo: 'Quién', tipo: 'texto', ancho: 16 }],
 			filas: movimientos.map(m => [
 				Util.hora(m.fecha),
-				(m.tipo === 'fondo' ? 'Fondo de caja' : 'Retiro') + (m.anulado ? ' (anulado)' : ''),
+				(m.tipo === 'fondo' ? 'Entrada de caja' : 'Salida de caja') + (m.anulado ? ' (anulado)' : ''),
 				m.comprobante || '', m.monto, m.motivo || '', m.quien || '']),
 		};
 

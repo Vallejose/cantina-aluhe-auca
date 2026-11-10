@@ -270,8 +270,9 @@ const Datos = (() => {
 
 	/**
 	 * Movimientos de efectivo que no son ventas:
+	 * (en pantalla: "Entrada de caja" y "Salida de caja"; los dos llevan comprobante numerado)
 	 *   fondo   plata que se pone en la caja (el cambio para empezar)
-	 *   retiro  plata que se saca durante el evento; lleva comprobante numerado
+	 *   retiro  plata que se saca durante el evento
 	 */
 	async function listarMovimientos() {
 		return (await DB.todos('movimientos')).sort((a, b) => a.fecha.localeCompare(b.fecha));
@@ -282,7 +283,7 @@ const Datos = (() => {
 		if (monto == null || monto <= 0) throw new Error('El monto tiene que ser mayor que cero');
 		motivo = (motivo || '').trim();
 		quien = (quien || '').trim();
-		if (tipo === 'retiro' && !motivo) throw new Error('Poné el motivo del retiro');
+		if (tipo === 'retiro' && !motivo) throw new Error('Poné el motivo de la salida');
 
 		const cfg = await configuracion();
 		const movimiento = {
@@ -292,11 +293,9 @@ const Datos = (() => {
 			prueba: cfg.prueba,
 			anulado: false,
 		};
-		// Los retiros se numeran por equipo: 2-01, 2-02, ...
-		if (tipo === 'retiro') {
-			const retiros = (await DB.todos('movimientos')).filter(m => m.tipo === 'retiro').length;
-			movimiento.comprobante = `${cfg.equipo}-${String(retiros + 1).padStart(2, '0')}`;
-		}
+		// Entradas y salidas se numeran juntas, por caja: 2-01, 2-02, ...
+		const numerados = (await DB.todos('movimientos')).filter(m => m.comprobante).length;
+		movimiento.comprobante = `${cfg.equipo}-${String(numerados + 1).padStart(2, '0')}`;
 		movimiento.id = await DB.guardar('movimientos', movimiento);
 		return movimiento;
 	}

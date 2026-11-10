@@ -21,10 +21,10 @@ Elegir artículos → observaciones → cobrar (un medio de pago) → **ticket +
 |---|---|---|
 | 1 | Primera vez | Elegir el número de caja (1 a 7 venta, 8 y 9 prueba), nombre de la cantina y pie del ticket |
 | 2 | Vender | Botones por artículo agrupados por categoría, buscador, cantidades con + y −, observación por línea, total |
-| 3 | Cobrar | Un medio de pago; en efectivo "paga con" y vuelto, con montos rápidos |
+| 3 | Cobrar | Un medio de pago (arranca sin ninguno elegido); en efectivo "paga con" y vuelto, con montos rápidos |
 | 4 | Ticket y comanda | Ticket con precios para el cliente; comanda sin precios para la cocina; mismo número. Se imprimen solos; si falla, Reintentar o Seguir sin imprimir |
 | 5 | Pedidos | Lista con búsqueda y filtros, volver a ver o reimprimir ticket o comanda, anular |
-| 6 | Movimientos | Fondo de caja, retiros con comprobante numerado, lo que debería haber en la caja |
+| 6 | Movimientos | Entradas y salidas de caja con comprobante numerado (se ve o se imprime), lo que debería haber en la caja |
 | 7 | Cierre › Resumen | Ventas, costo y ganancia; por medio de pago y por artículo; arqueo de efectivo |
 | 8 | Cierre › Exportaciones | Excel con 3 pestañas, 5 tablas CSV y 2 archivos JSON |
 | 9 | Artículos | Nombre, categoría y precio (obligatorios), costo opcional; ocultar; exportar e importar la carta |
@@ -85,7 +85,7 @@ Elegir artículos → observaciones → cobrar (un medio de pago) → **ticket +
 - **Pantallas:** notebook y tablet en horizontal.
 - **Colores:** azul marino del grupo (apenas más claro) y amarillo.
 - **Exportaciones:** costo y ganancia no salen en las planillas (solo en el JSON para consolidar).
-- **Impresión:** por red, a través de la laptop (ESC/POS, 80 mm). Interruptores Tickets y Comandas para todas las cajas, solo desde la laptop, y quedan como se dejaron. El comprobante de retiro no se imprime. Reimprimir ticket o comanda por separado.
+- **Impresión:** por red, a través de la laptop (ESC/POS, 80 mm). Interruptores Tickets y Comandas para todas las cajas, solo desde la laptop, y quedan como se dejaron. Los comprobantes de entrada y salida de caja se imprimen con un botón, sin firmas. Reimprimir ticket o comanda por separado.
 
 ## Numeración de tickets
 
@@ -105,7 +105,7 @@ se comuniquen. Avisa cuando quedan pocos números.
 - **Artículo:** nombre, categoría, precio, costo, visible u oculto.
 - **Medio de pago:** nombre y tipo (efectivo, otro, sin cargo).
 - **Pedido:** número, fecha y hora, líneas (artículo, cantidad, precio, costo, observación), total, cobrado, medio de pago, paga con, vuelto, anulado.
-- **Movimiento:** fondo o retiro, monto, motivo, quién, número de comprobante, anulado.
+- **Movimiento:** entrada (fondo) o salida (retiro) de caja, monto, motivo, quién, número de comprobante, anulado.
 
 ## Exportaciones (Cierre › Exportaciones)
 

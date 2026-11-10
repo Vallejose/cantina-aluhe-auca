@@ -1,4 +1,4 @@
-/* Movimientos de efectivo: fondo de caja, retiros y lo que debería haber en la caja. */
+/* Movimientos de efectivo: entradas y salidas de caja (con comprobante) y lo que debería haber en la caja. */
 const PantallaMovimientos = {
 	titulo: 'Movimientos',
 	icono: '💵',
@@ -11,34 +11,35 @@ const PantallaMovimientos = {
 			<header class="cabecera">
 				<h1>Movimientos</h1>
 				<div class="acciones">
-					<button id="fondo">Registrar fondo de caja</button>
-					<button id="retiro" class="principal">Registrar retiro</button>
+					<button id="fondo">Entrada de caja</button>
+					<button id="retiro" class="principal">Salida de caja</button>
 				</div>
 			</header>
 
 			<div class="indicadores">
-				<div class="indicador"><span>Fondo de caja</span><b>${Util.dinero(caja.fondo)}</b></div>
+				<div class="indicador"><span>Entradas de caja</span><b>${Util.dinero(caja.fondo)}</b></div>
 				<div class="indicador"><span>+ Ventas en efectivo</span><b>${Util.dinero(caja.ventasEfectivo)}</b></div>
-				<div class="indicador"><span>− Retiros (${caja.cantidadRetiros})</span><b class="negativo">${Util.dinero(caja.retiros)}</b></div>
+				<div class="indicador"><span>− Salidas de caja (${caja.cantidadRetiros})</span><b class="negativo">${Util.dinero(caja.retiros)}</b></div>
 				<div class="indicador destacado"><span>= Debería haber en caja</span><b>${Util.dinero(caja.esperado)}</b></div>
 			</div>
 
 			<h2 class="subtitulo">Movimientos</h2>
 			${movimientos.length === 0 ? `
-				<div class="tarjeta"><p class="ayuda sin-margen">Todavía no hay movimientos. Al empezar, registrá el <b>fondo de caja</b> (la plata para dar cambio).</p></div>` : `
+				<div class="tarjeta"><p class="ayuda sin-margen">Todavía no hay movimientos. Al empezar, registrá una <b>entrada de caja</b> con la plata para dar cambio.</p></div>` : `
 				<div class="tarjeta sin-relleno">
 					<table class="tabla">
 						<thead><tr><th>Hora</th><th>Movimiento</th><th>Motivo</th><th class="num">Monto</th><th></th></tr></thead>
 						<tbody>${movimientos.map(m => `
 							<tr class="${m.anulado ? 'anulado' : ''}">
 								<td>${Util.hora(m.fecha)}</td>
-								<td><b class="tachable">${m.tipo === 'fondo' ? 'Fondo de caja' : 'Retiro ' + Util.esc(m.comprobante)}</b>
+								<td><b class="tachable">${Documentos.nombreMovimiento(m)}</b>${m.comprobante ? ` <span class="suave nro">${Util.esc(m.comprobante)}</span>` : ''}
 									${m.quien ? `<br><span class="suave">${m.tipo === 'retiro' ? 'Retiró' : 'Puso'}: ${Util.esc(m.quien)}</span>` : ''}
 									${m.anulado ? `<span class="etiqueta anulado">ANULADO ${Util.hora(m.anuladoEn)}</span>` : ''}</td>
 								<td class="tachable">${Util.esc(m.motivo) || '<span class="suave">—</span>'}</td>
 								<td class="num tachable ${m.tipo === 'retiro' ? 'negativo' : ''}">${m.tipo === 'retiro' ? '− ' : '+ '}${Util.dinero(m.monto)}</td>
 								<td class="botones-fila">
-									${m.tipo === 'retiro' ? `<button data-comprobante="${m.id}">Comprobante</button>` : ''}
+									<button data-comprobante="${m.id}">Ver</button>
+									${m.anulado || !Impresion.hayServidor() ? '' : `<button data-imprimir="${m.id}">Imprimir</button>`}
 									${m.anulado ? '' : `<button data-anular="${m.id}" class="peligro">Anular</button>`}
 								</td>
 							</tr>`).join('')}
@@ -52,9 +53,10 @@ const PantallaMovimientos = {
 		c.querySelector('#fondo').onclick = () => this.formulario('fondo', caja);
 		c.querySelector('#retiro').onclick = () => this.formulario('retiro', caja);
 		c.querySelectorAll('[data-comprobante]').forEach(b => b.onclick = () => Documentos.mostrarComprobante(porId(b.dataset.comprobante)));
+		c.querySelectorAll('[data-imprimir]').forEach(b => b.onclick = () => Documentos.imprimirComprobante(porId(b.dataset.imprimir), b));
 		c.querySelectorAll('[data-anular]').forEach(b => b.onclick = async () => {
 			const m = porId(b.dataset.anular);
-			const nombre = m.tipo === 'fondo' ? 'el fondo de caja' : 'el retiro ' + m.comprobante;
+			const nombre = (m.tipo === 'fondo' ? 'la entrada de caja ' : 'la salida de caja ') + (m.comprobante || '');
 			if (!(await Util.confirmar('Anular movimiento', `¿Anular ${nombre} de ${Util.dinero(m.monto)}? Queda tachado y no cuenta para la caja.`, 'Anular'))) return;
 			await Datos.anularMovimiento(m.id);
 			Util.avisar('Movimiento anulado');
@@ -64,7 +66,7 @@ const PantallaMovimientos = {
 
 	formulario(tipo, caja) {
 		const esRetiro = tipo === 'retiro';
-		Util.modal(esRetiro ? 'Registrar retiro de efectivo' : 'Registrar fondo de caja', `
+		Util.modal(esRetiro ? 'Salida de caja' : 'Entrada de caja', `
 			<form class="formulario" onsubmit="return false">
 				${esRetiro ? `<p class="ayuda sin-margen">Hay ${Util.dinero(caja.esperado)} en caja según el sistema.</p>` : ''}
 				<label>Monto * <input name="monto" inputmode="decimal" placeholder="0,00" autocomplete="off"></label>
@@ -77,18 +79,17 @@ const PantallaMovimientos = {
 			</form>`, [
 			{ texto: 'Cancelar' },
 			{
-				texto: esRetiro ? 'Registrar y ver comprobante' : 'Registrar', clase: 'principal', accion: async capa => {
+				texto: 'Registrar', clase: 'principal', accion: async capa => {
 					const f = capa.querySelector('form');
 					const monto = Util.leerDinero(f.monto.value);
 					if (monto == null || monto <= 0) { Util.avisar('Revisá el monto (ej.: 2000 o 2.000,50)', 'error'); return false; }
 					if (esRetiro && monto > caja.esperado &&
-						!(await Util.confirmar('Retiro mayor que la caja', `Según el sistema hay ${Util.dinero(caja.esperado)} en caja. ¿Registrar igual el retiro de ${Util.dinero(monto)}?`, 'Registrar igual')))
+						!(await Util.confirmar('Salida mayor que la caja', `Según el sistema hay ${Util.dinero(caja.esperado)} en caja. ¿Registrar igual la salida de ${Util.dinero(monto)}?`, 'Registrar igual')))
 						return true; // se cerró la confirmación; no se registra
 					try {
 						const m = await Datos.registrarMovimiento({ tipo, monto, motivo: f.motivo.value, quien: f.quien.value });
-						Util.avisar(esRetiro ? `Retiro ${m.comprobante} registrado` : 'Fondo de caja registrado');
+						Util.avisar(`${Documentos.nombreMovimiento(m)} ${m.comprobante} registrada`);
 						await App.mostrar();
-						if (esRetiro) await Documentos.mostrarComprobante(m);
 					} catch (error) {
 						Util.avisar(error.message, 'error');
 						return false;

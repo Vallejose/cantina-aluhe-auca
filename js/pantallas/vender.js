@@ -214,7 +214,7 @@ const PantallaVender = {
 		if (medios.length === 0) return Util.avisar('No hay medios de pago. Cargalos en Medios de pago.', 'error');
 
 		const total = this.total();
-		let elegido = (medios.find(m => m.tipo === 'efectivo') || medios[0]).id;
+		let elegido = null; // se elige a mano: así no queda abierto el campo de efectivo sin querer
 
 		// Montos rápidos: justo, el próximo múltiplo de 100 y billetes comunes
 		const sugeridos = [...new Set([Math.ceil(total / 10000) * 10000, 50000, 100000, 200000])]
@@ -244,6 +244,7 @@ const PantallaVender = {
 			{
 				texto: 'Confirmar y generar ticket', clase: 'principal', accion: async () => {
 					const medio = medios.find(m => m.id === elegido);
+					if (!medio) { Util.avisar('Elegí el medio de pago', 'error'); return false; }
 					let pagaCon = null;
 					if (medio.tipo === 'efectivo') {
 						const texto = campo.value.trim();
@@ -279,7 +280,7 @@ const PantallaVender = {
 				b.classList.toggle('elegido', activo);
 				b.setAttribute('aria-pressed', activo);
 			});
-			const efectivo = medios.find(m => m.id === elegido).tipo === 'efectivo';
+			const efectivo = medios.find(m => m.id === elegido)?.tipo === 'efectivo';
 			zona.classList.toggle('oculto', !efectivo);
 			const paga = campo.value.trim() === '' ? total : Util.leerDinero(campo.value);
 			const falta = paga != null && paga < total;
@@ -287,7 +288,11 @@ const PantallaVender = {
 			vuelto.parentElement.classList.toggle('falta', paga == null || falta);
 		};
 
-		capa.querySelectorAll('[data-medio]').forEach(b => b.onclick = () => { elegido = Number(b.dataset.medio); actualizar(); });
+		capa.querySelectorAll('[data-medio]').forEach(b => b.onclick = () => {
+			elegido = Number(b.dataset.medio);
+			actualizar();
+			if (!zona.classList.contains('oculto')) campo.focus();
+		});
 		capa.querySelectorAll('[data-monto]').forEach(b => b.onclick = () => {
 			campo.value = b.dataset.monto ? Util.dineroParaCampo(Number(b.dataset.monto)) : '';
 			actualizar();
@@ -295,7 +300,6 @@ const PantallaVender = {
 		campo.oninput = actualizar;
 		campo.onkeydown = e => { if (e.key === 'Enter') capa.querySelector('.ventana-botones .principal').click(); };
 		actualizar();
-		campo.focus();
 	},
 
 	// -------------------------------------------------- Pedido recién cobrado
