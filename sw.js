@@ -6,7 +6,7 @@
  * Con conexión siempre usa los archivos nuevos. Si se agrega un archivo a la
  * app, sumarlo a ARCHIVOS y cambiar VERSION para que quede disponible sin internet.
  */
-const VERSION = 'cantina-v10';
+const VERSION = 'cantina-v11';
 
 const ARCHIVOS = [
 	'./',

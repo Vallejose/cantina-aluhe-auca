@@ -72,6 +72,9 @@ const Resumen = {
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify(r),
 			});
+			// 404: la laptop sigue con el servidor de antes (no se reinició después de actualizar)
+			if (resp.status === 404)
+				return { estado: 'error', error: 'La laptop tiene el servidor viejo: cerrá la ventana negra y abrí iniciar-cantina.bat de nuevo' };
 			const datos = await resp.json();
 			if (resp.ok) await DB.guardarConfig('ultimoEnvio', { fecha: r.enviado, pedidos: r.pedidos });
 			return datos;
