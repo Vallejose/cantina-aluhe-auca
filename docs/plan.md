@@ -28,20 +28,25 @@ Dónde estamos y qué falta. Se actualiza cada vez que se termina algo o se toma
 
 | # | Paso | Estado |
 |---|---|---|
-| 4.1 | **Datos de la impresora:** marca, modelo y ancho del papel (58 u 80 mm) | ⏳ Falta. Mientras tanto: 80 mm y ESC/POS genérico |
+| 4.1 | **Datos de la impresora:** marca, modelo y ancho del papel (58 u 80 mm) | 🟡 Papel de **80 mm**. Falta marca y modelo (se asume ESC/POS genérico) |
 | 4.2 | **Prueba de la impresora en red, sin la app:** IP fija en el router; mandarle un texto de prueba; ver cómo corta y cómo salen la ñ y las tildes | Pendiente |
-| 4.3 | **Diseño en el lienzo:** vistas 10 "Impresión" (Ajustes, en la laptop), 11 "Al cobrar" (qué ve la caja: impreso, imprimiendo, no salió, comandas apagadas) y 12 "Sumar una caja" | 🖍️ Propuesta en el lienzo, falta tu visto bueno |
+| 4.3 | **Diseño en el lienzo:** vistas 10 "Impresión" (Ajustes, en la laptop), 11 "Al cobrar" (qué ve la caja: impreso, imprimiendo, no salió, comandas apagadas) y 12 "Sumar una caja" | 🖍️ En el lienzo, con las decisiones de abajo. Falta el visto bueno final |
 | 4.4 | **Servidor en la laptop (Java):** sirve la app a las tablets por la red local y reenvía las impresiones a la impresora, de a una y en orden. Se arranca con `iniciar-cantina.bat` | Pendiente |
-| 4.5 | **Impresión en la app (ESC/POS):** al cobrar se imprimen ticket, corte, comanda y corte; reimprimir desde Pedidos; comprobante de retiro; indicador de impresora conectada; si falla, la venta se guarda y se puede reintentar | Pendiente |
+| 4.5 | **Impresión en la app (ESC/POS):** al cobrar se imprimen ticket, corte, comanda y corte; reimprimir ticket o comanda por separado desde Pedidos; indicador de impresora conectada; si falla, la venta se guarda y aparecen "Reintentar" o "Seguir sin imprimir" (anotar el número a mano) | Pendiente |
 | 4.6 | **Interruptores centrales en la laptop:** Tickets Sí/No y Comandas Sí/No. Rigen al instante para todas las cajas, y cada caja muestra qué se está imprimiendo | Pendiente |
 
 > **Alcance del servidor en este proyecto:** es el **simple**. Sirve la app, reenvía las impresiones y guarda solo su configuración (interruptores, IP de la impresora). **No guarda ni centraliza ventas.**
 
-**Decisiones de la etapa 4:**
-- ✅ Los interruptores Tickets y Comandas valen **para todas las cajas a la vez**.
-- 🟡 Supuesto: al prender el servidor, Tickets y Comandas arrancan **encendidos**.
-- 🟡 Supuesto: el **comprobante de retiro** (Movimientos, el papel con monto, motivo y dos firmas; no es el ticket) se imprime **siempre**, sin interruptor.
-- 🟡 Supuesto: "Impresión" va dentro del desplegable Ajustes. En la laptop se puede cambiar; en las tablets solo se ve el estado.
+**Decisiones de la etapa 4 (todas tomadas):**
+- Los interruptores Tickets y Comandas valen **para todas las cajas a la vez**.
+- Se cambian **solo desde la laptop** (Ajustes › Impresión). Las tablets solo ven el estado.
+- Al prender el servidor, los interruptores quedan **como estaban la última vez** (el servidor los guarda).
+- El **comprobante de retiro no se imprime**: queda solo en pantalla.
+- Si falla la impresión: botones **Reintentar** o **Seguir sin imprimir**. No reintenta solo.
+- **Reimprimir** desde Pedidos: ticket o comanda **por separado**.
+- La laptop **también vende**: es la Caja 1.
+- Papel de **80 mm**.
+- Sumar una caja (etapa 5): QR con la dirección, traer la carta de la laptop y avisar los números de caja en uso.
 
 ### Etapa 5 · Sumar una caja en un minuto
 
