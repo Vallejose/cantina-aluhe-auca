@@ -12,3 +12,6 @@ carta-equipo*.json
 cierre-equipo*.json
 ventas-equipo*.csv
 respaldo-equipo*.json
+
+# Configuracion del servidor de impresion (IP de la impresora e interruptores de cada laptop)
+servidor/cantina.properties

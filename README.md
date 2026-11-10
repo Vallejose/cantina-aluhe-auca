@@ -2,7 +2,7 @@
 
 App para tomar pedidos, cobrar, generar ticket y comanda, y cerrar la caja.
 Es una PWA: funciona en Windows y Android, se instala desde el navegador y
-**cada caja (dispositivo) guarda sus propios datos**, sin internet ni servidor.
+**cada caja (dispositivo) guarda sus propios datos**. La laptop hace de servidor para imprimir.
 
 ![Pantalla de venta](docs/capturas/02-vender.png)
 
@@ -19,24 +19,42 @@ Es una PWA: funciona en Windows y Android, se instala desde el navegador y
 | 1 | Base, configuración de la caja, artículos, medios de pago | ✅ Lista |
 | 2 | Vender, cobrar, ticket, comanda, pedidos y anulación | ✅ Lista |
 | 3 | Movimientos (fondo y retiros), cierre, exportaciones y respaldo | ✅ Lista |
-| 4 | Impresión por red, con la laptop como servidor | 🔜 Siguiente |
+| 4 | Impresión por red, con la laptop como servidor | ✅ Código listo · falta probar con la impresora real |
 | 5 | Sumar una caja en un minuto (QR, carta desde la laptop) | Pendiente |
 | 6 | Consolidar todas las cajas en la laptop | Pendiente |
 | 7 | Documentación ágil para los usuarios | Pendiente |
 | 8 | Ensayo general y preparación del evento | Pendiente |
 
-## Probarla en esta PC
+## Usarla en el evento
 
-Doble clic en **`abrir-cantina.bat`**. Abre el navegador en `http://localhost:8080`.
-Para cerrarla, cerrá la ventana "Servidor Cantina".
+![Impresión](docs/capturas/11-impresion.png)
 
-Usa el servidor web que viene con Java (`jwebserver`, Java 18 o superior).
+**En la laptop (Caja 1 y servidor)**
+
+1. Doble clic en **`iniciar-cantina.bat`**. Se abre una ventana negra (el servidor) y el navegador en `http://localhost:8080`.
+   La primera vez, Windows pregunta por el firewall: **permitir en redes privadas**.
+2. En **Ajustes › Impresión**, tocá *Cambiar dirección*, escribí la IP de la impresora y tocá *Imprimir prueba*.
+3. No cierres la ventana negra mientras dure el evento: ahí también se ve cada impresión.
+
+**En cada tablet**
+
+- Abrí Chrome en la dirección que muestra la ventana negra en *"En las tablets"* (por ejemplo `http://192.168.1.10:8080`).
+- La tablet y la laptop tienen que estar en la misma red (el router de la cantina).
+
+**Qué hace el servidor** (`servidor/Cantina.java`, Java 21, no hay que compilar): sirve la app,
+y manda los tickets y las comandas a la impresora (`IP:9100`, ESC/POS, papel de 80 mm), de a uno y en orden.
+Los interruptores **Tickets** y **Comandas** se cambian solo desde la laptop, valen para todas las cajas
+y quedan guardados en `servidor/cantina.properties`. **No guarda ventas**: cada caja guarda las suyas.
+
+Si la impresión falla, la venta ya está guardada: se puede *Reintentar* o *Seguir sin imprimir*.
+Desde **Pedidos** se reimprime el ticket o la comanda de cualquier pedido.
 
 > Los datos quedan guardados en el navegador **para esa dirección exacta**.
-> Abrila siempre en `http://localhost:8080` y con el mismo navegador, o vas a ver la app vacía.
+> Abrila siempre con la misma dirección y el mismo navegador, o vas a ver la app vacía.
+> Por eso conviene que la laptop tenga **IP fija** en el router.
 
-Durante el evento, la laptop va a hacer de servidor: las tablets van a abrir la app
-desde la laptop por la red local (etapa 4).
+Sin la laptop (por ejemplo, con otro servidor web) la app vende igual, pero no imprime:
+el ticket y la comanda se ven en pantalla.
 
 ## Numeración
 
@@ -79,10 +97,14 @@ js/db.js                 almacenamiento del dispositivo (IndexedDB)
 js/datos.js              reglas de negocio (validaciones, carta, reseteo)
 js/app.js                arranque y menú
 js/pantallas/*.js        una pantalla por archivo
-js/documentos.js         ticket, comanda y comprobante de retiro
+js/documentos.js         ticket, comanda y comprobante de retiro (en pantalla)
+js/escpos.js             ticket y comanda para la impresora térmica (ESC/POS, 80 mm)
+js/impresion.js          habla con el servidor de la laptop: imprimir, reintentar, interruptores
 js/exportaciones.js      tablas de exportación, CSV y Excel
 js/xlsx.js               generador de archivos Excel sin librerías
 sw.js                    permite abrirla sin internet
+servidor/Cantina.java    servidor de la laptop: sirve la app y reenvía las impresiones
+iniciar-cantina.bat      arranca el servidor en Windows
 docs/                    esquema del programa y capturas
 borradores/              versiones guardadas que la app no usa (por ejemplo, exportaciones con filtros)
 manifest.webmanifest     nombre e ícono al instalarla

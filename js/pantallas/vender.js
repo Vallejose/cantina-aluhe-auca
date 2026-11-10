@@ -13,6 +13,7 @@ const PantallaVender = {
 	categoria: null,   // null = todas
 	busqueda: '',
 	confirmado: null,  // pedido recién cobrado: se muestra su ticket y comanda
+	impresion: null,   // cómo va la impresión del pedido recién cobrado
 
 	async dibujar(c) {
 		this.cfg = await Datos.configuracion();
@@ -257,6 +258,7 @@ const PantallaVender = {
 						this.lineas = [];
 						this.busqueda = '';
 						this.confirmado = pedido;
+						this.imprimir(['ticket', 'comanda']);
 						App.mostrar();
 					} catch (error) {
 						Util.avisar(error.message, 'error');
@@ -312,10 +314,10 @@ const PantallaVender = {
 						<span>Total ${Util.dinero(p.total)} · ${detalle}</span>
 					</div>
 					<div class="acciones">
-						<button disabled title="La impresión se agrega más adelante">Imprimir (más adelante)</button>
 						<button id="nuevo-pedido" class="principal grande">Nuevo pedido</button>
 					</div>
 				</div>
+				<div id="estado-impresion"></div>
 				<div class="papeles">
 					<section><h2 class="titulo-grupo">Ticket · para el cliente</h2>${Documentos.ticket(p, this.cfg)}</section>
 					<section><h2 class="titulo-grupo">Comanda · para la cocina</h2>${Documentos.comanda(p)}</section>
@@ -325,5 +327,64 @@ const PantallaVender = {
 		const nuevo = c.querySelector('#nuevo-pedido');
 		nuevo.onclick = () => { this.confirmado = null; App.mostrar(); };
 		nuevo.focus();
+		this.dibujarImpresion();
+	},
+
+	// ------------------------------------------------------------- Imprimir
+
+	/** Manda a imprimir el pedido recién cobrado (la venta ya está guardada) */
+	async imprimir(cuales, idReintento = null) {
+		const pedido = this.confirmado;
+		this.impresion = { estado: 'imprimiendo', numero: pedido.numero };
+		this.dibujarImpresion();
+		const resultado = idReintento
+			? await Impresion.reintentar(idReintento)
+			: await Impresion.imprimirPedido(pedido, await Datos.configuracion(), cuales);
+		if (this.confirmado !== pedido) return; // ya se pasó a otro pedido
+		this.impresion = { ...resultado, numero: pedido.numero, cuales };
+		this.dibujarImpresion();
+	},
+
+	dibujarImpresion() {
+		const zona = document.getElementById('estado-impresion');
+		const i = this.impresion;
+		if (!zona || !i || i.numero !== this.confirmado?.numero) return;
+
+		const nombre = { ticket: 'Ticket', comanda: 'Comanda' };
+		const ok = t => `<span class="impresion-item ok">✓ ${nombre[t]} ${t === 'ticket' ? 'impreso' : 'impresa'}</span>`;
+		const apagado = t => `<span class="impresion-item apagado">${nombre[t]}: apagado desde la laptop</span>`;
+
+		let html;
+		switch (i.estado) {
+			case 'imprimiendo':
+				html = `<div class="estado-impresion"><span class="girando" aria-hidden="true"></span><b>Imprimiendo…</b></div>`;
+				break;
+			case 'impreso':
+			case 'omitido':
+				html = `<div class="estado-impresion">${i.impreso.map(ok).join('')}${i.omitido.map(apagado).join('')}</div>`;
+				break;
+			case 'esperando':
+				html = `<div class="estado-impresion"><b>En la fila de la impresora.</b> Sale en un momento.</div>`;
+				break;
+			case 'sin-servidor':
+				html = `<div class="estado-impresion gris">Esta caja no está conectada a la laptop: no se imprime. Mostrá el ticket en pantalla.</div>`;
+				break;
+			case 'seguir':
+				html = `<div class="estado-impresion gris">No se imprimió. Anotá el número <b>${i.numero}</b> a mano.</div>`;
+				break;
+			default: // error
+				html = `
+					<div class="estado-impresion error" role="alert">
+						<div><b>No salió la impresión.</b> La venta <b>ya está guardada</b>. Revisá papel y cable.
+						<br><small>${Util.esc(i.error || '')}</small></div>
+						<div class="acciones">
+							<button id="reintentar" class="principal">Reintentar</button>
+							<button id="seguir">Seguir sin imprimir</button>
+						</div>
+					</div>`;
+		}
+		zona.innerHTML = html;
+		zona.querySelector('#reintentar')?.addEventListener('click', () => this.imprimir(i.cuales, i.id));
+		zona.querySelector('#seguir')?.addEventListener('click', () => { this.impresion = { estado: 'seguir', numero: i.numero }; this.dibujarImpresion(); });
 	},
 };

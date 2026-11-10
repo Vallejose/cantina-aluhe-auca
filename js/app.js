@@ -13,11 +13,12 @@ const PANTALLAS = {
 	articulos: PantallaArticulos,
 	medios: PantallaMedios,
 	configuracion: PantallaConfiguracion,
+	impresion: PantallaImpresion,
 };
 
 /** Menú: el trabajo diario siempre a la vista; los ajustes, dentro de un desplegable */
 const MENU_DIARIO = ['vender', 'pedidos', 'movimientos', 'cierre'];
-const MENU_AJUSTES = ['articulos', 'medios', 'configuracion'];
+const MENU_AJUSTES = ['impresion', 'articulos', 'medios', 'configuracion'];
 
 const App = {
 
@@ -33,6 +34,9 @@ const App = {
 
 		window.addEventListener('hashchange', () => this.mostrar());
 		await this.mostrar();
+
+		// Estado de la impresora de la laptop, cada 5 segundos
+		Impresion.iniciar();
 	},
 
 	async mostrar() {
@@ -76,7 +80,9 @@ const App = {
 			<details class="ajustes" ${ajustesAbiertos ? 'open' : ''}>
 				<summary><span class="icono">🛠️</span><span>Ajustes</span></summary>
 				${MENU_AJUSTES.map(enlace).join('')}
-			</details>`;
+			</details>
+			<div id="indicador-impresora" class="indicador-impresora"></div>`;
+		Impresion.dibujarIndicador();
 
 		// En los equipos de prueba, una franja amarilla arriba de todo
 		const franja = document.getElementById('franja-prueba');

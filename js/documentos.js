@@ -66,7 +66,7 @@ const Documentos = (() => {
 				<div class="corte"></div>
 				${lineas}
 				<div class="corte"></div>
-				<div class="centro">${Datos.cantidadArticulos(pedido)} artículos</div>
+				<div class="centro">${Datos.cantidadArticulos(pedido)} ${Datos.cantidadArticulos(pedido) === 1 ? 'artículo' : 'artículos'}</div>
 			</div>`;
 	}
 
@@ -99,9 +99,24 @@ const Documentos = (() => {
 	/** Ventana con el ticket o la comanda de un pedido ya hecho */
 	async function mostrar(pedido, cual) {
 		const cfg = await Datos.configuracion();
-		Util.modal(`${cual === 'ticket' ? 'Ticket' : 'Comanda'} del pedido ${pedido.numero}`,
-			`<div class="papeles">${cual === 'ticket' ? ticket(pedido, cfg) : comanda(pedido)}</div>`,
-			[{ texto: 'Cerrar', clase: 'principal' }]);
+		const nombre = cual === 'ticket' ? 'Ticket' : 'Comanda';
+		const botones = [{ texto: 'Cerrar', clase: 'principal' }];
+		// Reimprimir: solo pedidos válidos y si la caja está conectada a la laptop.
+		// Sale aunque el interruptor esté apagado (es un pedido a propósito).
+		if (!pedido.anulado && Impresion.hayServidor())
+			botones.unshift({
+				texto: `Reimprimir ${nombre.toLowerCase()}`, accion: async capa => {
+					const boton = capa.querySelector('.ventana-botones button');
+					boton.disabled = true;
+					boton.textContent = 'Imprimiendo…';
+					const r = await Impresion.imprimirPedido(pedido, cfg, [cual], true);
+					if (r.estado === 'impreso') Util.avisar(`${nombre} ${pedido.numero} impreso`);
+					else if (r.estado === 'esperando') Util.avisar('En la fila de la impresora');
+					else Util.avisar(r.error || 'No salió la impresión', 'error');
+				},
+			});
+		Util.modal(`${nombre} del pedido ${pedido.numero}`,
+			`<div class="papeles">${cual === 'ticket' ? ticket(pedido, cfg) : comanda(pedido)}</div>`, botones);
 	}
 
 	return { ticket, comanda, comprobante, mostrar, mostrarComprobante };

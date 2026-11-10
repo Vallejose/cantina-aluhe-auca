@@ -3,16 +3,17 @@
 Una app instalable (PWA) para Windows y Android. Un empleado carga el pedido de
 un cliente anónimo, cobra con un medio de pago y la app genera el ticket y la
 comanda con el mismo número. Cada dispositivo que vende es una **caja**, y cada
-caja guarda sus propios datos, sin red y sin servidor.
+caja guarda sus propios datos. La laptop hace de servidor: sirve la app a las tablets y manda el ticket y la comanda a la impresora térmica.
 
 ## Cómo es un pedido
 
-Elegir artículos → observaciones → cobrar (un medio de pago) → **ticket + comanda** (mismo número) → queda en Pedidos (se puede anular).
+Elegir artículos → observaciones → cobrar (un medio de pago) → **ticket + comanda** (mismo número, se imprimen solos) → queda en Pedidos (se puede anular o reimprimir).
 
 ## Menú
 
 - **Siempre a la vista:** Vender, Pedidos, Movimientos, Cierre.
-- **Desplegable "Ajustes":** Artículos, Medios de pago, Configuración.
+- **Desplegable "Ajustes":** Impresión, Artículos, Medios de pago, Configuración.
+- **Al pie del menú:** cómo está la impresora y si salen tickets y comandas.
 
 ## Pantallas
 
@@ -21,13 +22,14 @@ Elegir artículos → observaciones → cobrar (un medio de pago) → **ticket +
 | 1 | Primera vez | Elegir el número de caja (1 a 7 venta, 8 y 9 prueba), nombre de la cantina y pie del ticket |
 | 2 | Vender | Botones por artículo agrupados por categoría, buscador, cantidades con + y −, observación por línea, total |
 | 3 | Cobrar | Un medio de pago; en efectivo "paga con" y vuelto, con montos rápidos |
-| 4 | Ticket y comanda | Ticket con precios para el cliente; comanda sin precios para la cocina; mismo número |
-| 5 | Pedidos | Lista con búsqueda y filtros, volver a ver ticket o comanda, anular |
+| 4 | Ticket y comanda | Ticket con precios para el cliente; comanda sin precios para la cocina; mismo número. Se imprimen solos; si falla, Reintentar o Seguir sin imprimir |
+| 5 | Pedidos | Lista con búsqueda y filtros, volver a ver o reimprimir ticket o comanda, anular |
 | 6 | Movimientos | Fondo de caja, retiros con comprobante numerado, lo que debería haber en la caja |
 | 7 | Cierre › Resumen | Ventas, costo y ganancia; por medio de pago y por artículo; arqueo de efectivo |
 | 8 | Cierre › Exportaciones | Excel con 3 pestañas, 5 tablas CSV y 2 archivos JSON |
 | 9 | Artículos | Nombre, categoría y precio (obligatorios), costo opcional; ocultar; exportar e importar la carta |
 | 10 | Medios de pago | Efectivo (calcula vuelto), otros, y sin cargo (no suma dinero) |
+| 11 | Impresión | Interruptores Tickets y Comandas (para todas las cajas, solo desde la laptop), impresora, prueba, cajas conectadas, últimas impresiones |
 
 ### 1 · Primera vez
 ![Primera vez](capturas/01-primera-vez.png)
@@ -59,6 +61,12 @@ Elegir artículos → observaciones → cobrar (un medio de pago) → **ticket +
 ### 10 · Medios de pago
 ![Medios de pago](capturas/09-medios-de-pago.png)
 
+### 11 · Impresión
+![Impresión](capturas/11-impresion.png)
+
+### Si no sale la impresión
+![No salió la impresión](capturas/12-no-salio-la-impresion.png)
+
 *Las capturas usan datos de ejemplo.*
 
 ## Decisiones tomadas
@@ -77,6 +85,7 @@ Elegir artículos → observaciones → cobrar (un medio de pago) → **ticket +
 - **Pantallas:** notebook y tablet en horizontal.
 - **Colores:** azul marino del grupo (apenas más claro) y amarillo.
 - **Exportaciones:** costo y ganancia no salen en las planillas (solo en el JSON para consolidar).
+- **Impresión:** por red, a través de la laptop (ESC/POS, 80 mm). Interruptores Tickets y Comandas para todas las cajas, solo desde la laptop, y quedan como se dejaron. El comprobante de retiro no se imprime. Reimprimir ticket o comanda por separado.
 
 ## Numeración de tickets
 

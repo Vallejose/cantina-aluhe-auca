@@ -51,12 +51,12 @@ en el mismo commit.
 - Un solo medio de pago por pedido. "Sin cargo" es un medio de pago: cuenta productos y costo, no dinero.
 - Anular = pedido entero, queda visible y no suma. Comanda única, sin sectores ni estados.
 - **Costo y ganancia no salen en las planillas exportadas** (solo en el JSON para consolidar).
-- Menú: Vender, Pedidos, Movimientos, Cierre; y el desplegable "Ajustes" (Artículos,
-  Medios de pago, Configuración).
+- Menú: Vender, Pedidos, Movimientos, Cierre; y el desplegable "Ajustes" (Impresión, Artículos,
+  Medios de pago, Configuración). Al pie, el indicador de la impresora.
 - Colores del grupo: azul marino `#1e3a5f` y amarillo `#f2b134` (variables en `css/estilos.css`).
 - Pantallas: notebook y tablet **en horizontal**.
 
-## Etapa en curso: impresión por red (etapa 4)
+## Impresión por red (etapa 4, código listo)
 
 - La **laptop hace de servidor** con un programa chico en **Java** (el dueño tiene Java 21):
   sirve la app a las tablets por la red local y reenvía las impresiones a la impresora
@@ -66,12 +66,20 @@ en el mismo commit.
   ⚠️ El servidor que además **almacena y centraliza la información de las terminales es otro
   proyecto**: no se implementa en este repositorio.
 - GitHub Pages quedó **descartado** para este proyecto (se sirve desde la laptop).
-- Ver los pasos y las decisiones pendientes en `docs/plan.md`.
+- Código: `servidor/Cantina.java` (Java 21, un solo archivo, sin compilar ni dependencias),
+  `js/escpos.js` (bytes ESC/POS, PC850, 48 columnas), `js/impresion.js` (API del servidor),
+  `js/pantallas/impresion.js` (Ajustes › Impresión). La API está documentada al principio de `Cantina.java`.
+- Los interruptores y la IP se cambian **solo desde la laptop** (el servidor lo controla por
+  dirección de origen: localhost). La reimpresión desde Pedidos sale aunque el interruptor esté apagado.
+  El comprobante de retiro **no se imprime**.
+- Ver los pasos y las decisiones en `docs/plan.md`.
 
 ## Cómo probar los cambios
 
-- Servir la carpeta y abrir en Chromium: `python3 -m http.server 8765` (o `jwebserver -p 8080`
-  en Windows, que es lo que hace `abrir-cantina.bat`).
+- Con impresión: `java servidor/Cantina.java --sin-navegador` desde la carpeta de la app
+  (puerto 8080; es lo que hace `iniciar-cantina.bat`). Sin impresora real, una "impresora falsa"
+  que escuche en 127.0.0.1:9100 y guarde lo que recibe alcanza; el texto se lee decodificando PC850.
+- Sin impresión: `python3 -m http.server 8765` (la app vende igual y muestra "Sin impresora").
 - Probar los flujos con Playwright (sin interfaz). Para cargar datos rápido se puede usar la
   consola: `Datos.guardarArticulo(...)`, `Datos.confirmarPedido(...)`.
 - Revisar que no haya errores en consola y sacar capturas de lo que cambió.

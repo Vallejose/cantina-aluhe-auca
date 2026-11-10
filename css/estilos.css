@@ -542,3 +542,71 @@ button.export-baldosa:hover .export-icono { background: #fff; }
 .export-grupo summary::after { content: "▸"; margin-left: auto; color: var(--suave); transition: transform .15s; }
 .export-grupo[open] summary::after { transform: rotate(90deg); }
 @media (prefers-reduced-motion: reduce) { .export-grupo summary::after { transition: none; } }
+
+/* ----------------------------------------------------------- Impresión */
+
+/* Indicador al pie del menú */
+.indicador-impresora { margin-top: auto; padding-top: 12px; }
+.indicador-impresora:empty { display: none; }
+.menu a.indicador-enlace { background: rgba(255, 255, 255, .1); font-size: .9rem; gap: 8px; }
+.chips-impresion { display: flex; gap: 6px; flex-wrap: wrap; padding: 8px 4px 0; }
+.chip-impresion { font-size: .75rem; font-weight: 700; padding: 2px 9px; border-radius: 99px; }
+.chip-impresion.si { background: var(--acento); color: var(--marca); }
+.chip-impresion.no { background: rgba(255, 255, 255, .18); color: #d3dcea; text-decoration: line-through; }
+
+.punto { display: inline-block; width: 11px; height: 11px; border-radius: 50%; flex: none; }
+.punto.verde { background: #5fd38a; }
+.punto.amarillo { background: var(--acento); }
+.punto.rojo { background: #ff6b5e; }
+.punto.gris { background: #9aa6b6; }
+.tarjeta .punto.verde { background: var(--ok); }
+.tarjeta .punto.rojo { background: var(--peligro); }
+
+/* Al cobrar */
+.estado-impresion {
+	display: flex; flex-wrap: wrap; align-items: center; gap: 10px 24px;
+	background: var(--superficie); border: 1px solid var(--borde); border-radius: 12px; padding: 12px 20px; font-size: 1.05rem;
+}
+.estado-impresion.gris { color: var(--suave); }
+.estado-impresion.error { border: 2px solid var(--peligro); color: #8c2219; justify-content: space-between; }
+.estado-impresion.error small { color: var(--suave); }
+.impresion-item.ok { color: var(--ok); font-weight: 700; }
+.impresion-item.apagado { color: var(--suave); }
+.girando {
+	width: 18px; height: 18px; border-radius: 50%;
+	border: 3px solid var(--borde); border-top-color: var(--marca); animation: girar .8s linear infinite;
+}
+@keyframes girar { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .girando { animation: none; } }
+
+/* Pantalla Impresión */
+button.interruptor {
+	display: flex; align-items: center; justify-content: space-between; gap: 16px;
+	width: 100%; min-height: 76px; padding: 12px 16px; border: 2px solid var(--borde); border-radius: 12px; text-align: left;
+}
+button.interruptor > span:first-child { display: flex; flex-direction: column; gap: 2px; }
+button.interruptor b { font-size: 1.25rem; }
+button.interruptor small { color: var(--suave); font-size: .9rem; }
+button.interruptor .pista { position: relative; width: 64px; height: 36px; border-radius: 99px; background: #c9d1dc; flex: none; }
+button.interruptor .pista i { position: absolute; top: 4px; left: 4px; width: 28px; height: 28px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .25); transition: left .15s; }
+button.interruptor.si { border-color: var(--marca); }
+button.interruptor.si .pista { background: var(--marca); }
+button.interruptor.si .pista i { left: 32px; background: var(--acento); }
+button.interruptor:disabled { opacity: .75; }
+
+.fila-impresora { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 10px; }
+.estado-impresora { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; }
+.datos-impresora { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; margin: 0 0 14px; }
+.datos-impresora dt { color: var(--suave); }
+.datos-impresora dd { margin: 0; }
+.mono { font-family: Consolas, "Courier New", ui-monospace, monospace; }
+
+.grilla-cajas { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.caja-conectada { padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; }
+.caja-conectada b { font-size: 1.15rem; }
+.caja-conectada span { color: var(--suave); font-size: .9rem; }
+.caja-conectada.sin-senal { opacity: .6; border-style: dashed; }
+
+.estado-fila { font-weight: 700; }
+.estado-fila.ok { color: var(--ok); }
+.estado-fila.mal { color: var(--peligro); }

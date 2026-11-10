@@ -6,7 +6,7 @@
  * Con conexión siempre usa los archivos nuevos. Si se agrega un archivo a la
  * app, sumarlo a ARCHIVOS y cambiar VERSION para que quede disponible sin internet.
  */
-const VERSION = 'cantina-v7';
+const VERSION = 'cantina-v8';
 
 const ARCHIVOS = [
 	'./',
@@ -19,6 +19,8 @@ const ARCHIVOS = [
 	'js/documentos.js',
 	'js/xlsx.js',
 	'js/exportaciones.js',
+	'js/escpos.js',
+	'js/impresion.js',
 	'js/app.js',
 	'js/pantallas/vender.js',
 	'js/pantallas/pedidos.js',
@@ -27,6 +29,7 @@ const ARCHIVOS = [
 	'js/pantallas/configuracion.js',
 	'js/pantallas/articulos.js',
 	'js/pantallas/medios.js',
+	'js/pantallas/impresion.js',
 	'iconos/icono-192.png',
 	'iconos/icono-512.png',
 ];
@@ -46,6 +49,8 @@ self.addEventListener('activate', evento => {
 // Primero la red (así siempre se ve la última versión); sin internet, la copia guardada
 self.addEventListener('fetch', evento => {
 	if (evento.request.method !== 'GET') return;
+	// Lo que contesta la laptop sobre la impresora nunca se guarda
+	if (new URL(evento.request.url).pathname.includes('/api/')) return;
 	evento.respondWith(
 		fetch(evento.request)
 			.then(respuesta => {
