@@ -28,19 +28,20 @@ Dónde estamos y qué falta. Se actualiza cada vez que se termina algo o se toma
 
 | # | Paso | Estado |
 |---|---|---|
-| 4.1 | **Datos de la impresora:** marca, modelo y ancho del papel (58 u 80 mm) | ⏳ Falta tu respuesta |
+| 4.1 | **Datos de la impresora:** marca, modelo y ancho del papel (58 u 80 mm) | ⏳ Falta. Mientras tanto: 80 mm y ESC/POS genérico |
 | 4.2 | **Prueba de la impresora en red, sin la app:** IP fija en el router; mandarle un texto de prueba; ver cómo corta y cómo salen la ñ y las tildes | Pendiente |
-| 4.3 | **Diseño en el lienzo:** pantalla "Impresión" (en la laptop) y pantalla "Sumar una caja" | Pendiente. Faltan decisiones (ver abajo) |
+| 4.3 | **Diseño en el lienzo:** vistas 10 "Impresión" (Ajustes, en la laptop), 11 "Al cobrar" (qué ve la caja: impreso, imprimiendo, no salió, comandas apagadas) y 12 "Sumar una caja" | 🖍️ Propuesta en el lienzo, falta tu visto bueno |
 | 4.4 | **Servidor en la laptop (Java):** sirve la app a las tablets por la red local y reenvía las impresiones a la impresora, de a una y en orden. Se arranca con `iniciar-cantina.bat` | Pendiente |
 | 4.5 | **Impresión en la app (ESC/POS):** al cobrar se imprimen ticket, corte, comanda y corte; reimprimir desde Pedidos; comprobante de retiro; indicador de impresora conectada; si falla, la venta se guarda y se puede reintentar | Pendiente |
 | 4.6 | **Interruptores centrales en la laptop:** Tickets Sí/No y Comandas Sí/No. Rigen al instante para todas las cajas, y cada caja muestra qué se está imprimiendo | Pendiente |
 
 > **Alcance del servidor en este proyecto:** es el **simple**. Sirve la app, reenvía las impresiones y guarda solo su configuración (interruptores, IP de la impresora). **No guarda ni centraliza ventas.**
 
-**Decisiones pendientes para la etapa 4:**
-- ¿Los interruptores valen para todas las cajas a la vez, o por caja?
-- ¿El comprobante de retiro se imprime siempre, o tiene su propio interruptor?
-- ¿Tickets y comandas arrancan encendidos?
+**Decisiones de la etapa 4:**
+- ✅ Los interruptores Tickets y Comandas valen **para todas las cajas a la vez**.
+- 🟡 Supuesto: al prender el servidor, Tickets y Comandas arrancan **encendidos**.
+- 🟡 Supuesto: el **comprobante de retiro** (Movimientos, el papel con monto, motivo y dos firmas; no es el ticket) se imprime **siempre**, sin interruptor.
+- 🟡 Supuesto: "Impresión" va dentro del desplegable Ajustes. En la laptop se puede cambiar; en las tablets solo se ve el estado.
 
 ### Etapa 5 · Sumar una caja en un minuto
 
