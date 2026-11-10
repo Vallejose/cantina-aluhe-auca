@@ -19,7 +19,7 @@ Dónde estamos y qué falta. Se actualiza cada vez que se termina algo o se toma
 | ✅ | Cajas 1 a 7 de venta y 8 y 9 de prueba (con reseteo); "Caja" en lugar de "Equipo"; pantalla "Movimientos" |
 | ✅ | Menú con desplegable "Ajustes"; colores del grupo (azul marino y amarillo) |
 | ✅ | Repositorio en GitHub con documentación y capturas |
-| ✅ | **Etapa 4 (código):** servidor en la laptop, impresión al cobrar, reintentar, reimprimir, pantalla Impresión e indicador. Probado con una impresora simulada |
+| ✅ | **Etapa 4 (código):** servidor en la laptop, impresión al cobrar, reintentar, reimprimir, pantalla Impresión e indicador. Probado con la impresora real desde la laptop; falta probar desde una tablet Android |
 
 ---
 
@@ -30,7 +30,7 @@ Dónde estamos y qué falta. Se actualiza cada vez que se termina algo o se toma
 | # | Paso | Estado |
 |---|---|---|
 | 4.1 | **Datos de la impresora:** marca, modelo y ancho del papel (58 u 80 mm) | 🟡 Papel de **80 mm**. Falta marca y modelo (se asume ESC/POS genérico) |
-| 4.2 | **Prueba con la impresora real:** IP fija en el router; *Ajustes › Impresión › Imprimir prueba*; ver cómo corta y cómo salen la ñ y las tildes (si salen mal, se cambia la tabla en `js/escpos.js`) | ⏳ Pendiente: necesita la impresora |
+| 4.2 | **Prueba con la impresora real:** IP fija en el router; *Ajustes › Impresión › Imprimir prueba*; ver cómo corta y cómo salen la ñ y las tildes (si salen mal, se cambia la tabla en `js/escpos.js`) | ✅ Probado: imprime bien desde la laptop |
 | 4.3 | **Diseño en el lienzo:** vistas 10 "Impresión" (Ajustes, en la laptop), 11 "Al cobrar" (qué ve la caja: impreso, imprimiendo, no salió, comandas apagadas) y 12 "Sumar una caja" | ✅ En el lienzo |
 | 4.4 | **Servidor en la laptop (Java):** sirve la app a las tablets por la red local y reenvía las impresiones a la impresora, de a una y en orden. Se arranca con `iniciar-cantina.bat` | ✅ `servidor/Cantina.java` |
 | 4.5 | **Impresión en la app (ESC/POS):** al cobrar se imprimen ticket, corte, comanda y corte; reimprimir ticket o comanda por separado desde Pedidos; indicador de impresora conectada; si falla, la venta se guarda y aparecen "Reintentar" o "Seguir sin imprimir" (anotar el número a mano) | ✅ |
