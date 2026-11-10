@@ -23,6 +23,7 @@ nada técnico en pantalla.
 | Cómo usarla, archivos que genera, estructura del código | [`README.md`](README.md) |
 | Versiones guardadas que la app **no usa** | [`borradores/`](borradores/) |
 | Diseño visual (lienzo con el esquema y las vistas) | Artifact privado del dueño: https://claude.ai/artifact/2NC1jHyLS8XCNwqAJ9TzzZ |
+| **Guía de uso** para los usuarios (vender, encargado, si algo falla, armado) | Doc del dueño: https://claude.ai/artifact/6Y2F3S6Suq9BpN9AJgtwRE — actualizarla si cambia una pantalla |
 
 **Mantené `docs/plan.md` al día**: cuando termines algo o se tome una decisión, actualizalo
 en el mismo commit.
