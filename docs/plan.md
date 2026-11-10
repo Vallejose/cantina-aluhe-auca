@@ -75,7 +75,11 @@ Dónde estamos y qué falta. Se actualiza cada vez que se termina algo o se toma
 
 ### Etapa 7 · Documentación ágil para los usuarios
 
-> ✅ **Hecha la Guía de uso** (doc del dueño, se exporta a PDF para imprimir): https://claude.ai/artifact/6Y2F3S6Suq9BpN9AJgtwRE — 1) Vender en 5 pasos, 2) Encargado de caja y cierre del día, 3) Si algo falla, 4) Antes del evento (organizador) con lista para el día. Falta: ayuda "?" dentro de la app (a definir). Si cambia una pantalla, actualizar la guía.
+> ✅ **Guías hechas** (docs del dueño, se exportan a PDF para imprimir):
+> - **Guía del cajero**: https://claude.ai/artifact/9wxKDNqSqNRxLZsGRpoH9u — vender en 5 pasos y qué hacer si pasa algo.
+> - **Guía del encargado de turno**: https://claude.ai/artifact/WRBCWGaSCs1j4idaqDQGN3 — apertura, durante el turno, cierre del turno y si algo falla.
+> - **Guía completa** (con la parte del organizador): https://claude.ai/artifact/6Y2F3S6Suq9BpN9AJgtwRE.
+> Falta: ayuda "?" dentro de la app (a definir). Si cambia una pantalla, actualizar la guía.
 
 Para personas jóvenes que no conocen el proyecto: poco texto, muchas imágenes, lenguaje simple.
 

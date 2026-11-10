@@ -12,7 +12,7 @@ Es una PWA: funciona en Windows y Android, se instala desde el navegador y
 ## Estado
 
 👉 **[Plan de trabajo](docs/plan.md):** qué está hecho, qué falta y en qué orden.
-📘 **[Guía de uso](https://claude.ai/artifact/6Y2F3S6Suq9BpN9AJgtwRE)** para quienes atienden (privada del dueño; se exporta a PDF).
+📘 Guías (privadas del dueño; se exportan a PDF): **[cajero](https://claude.ai/artifact/9wxKDNqSqNRxLZsGRpoH9u)** · **[encargado de turno](https://claude.ai/artifact/WRBCWGaSCs1j4idaqDQGN3)** · [completa, con el organizador](https://claude.ai/artifact/6Y2F3S6Suq9BpN9AJgtwRE).
 🤖 **[CLAUDE.md](CLAUDE.md):** contexto, decisiones y forma de trabajo para agentes de IA que colaboren en el proyecto.
 
 | Etapa | Contenido | Estado |

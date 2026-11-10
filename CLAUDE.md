@@ -23,7 +23,11 @@ nada técnico en pantalla.
 | Cómo usarla, archivos que genera, estructura del código | [`README.md`](README.md) |
 | Versiones guardadas que la app **no usa** | [`borradores/`](borradores/) |
 | Diseño visual (lienzo con el esquema y las vistas) | Artifact privado del dueño: https://claude.ai/artifact/2NC1jHyLS8XCNwqAJ9TzzZ |
-| **Guía de uso** para los usuarios (vender, encargado, si algo falla, armado) | Doc del dueño: https://claude.ai/artifact/6Y2F3S6Suq9BpN9AJgtwRE — actualizarla si cambia una pantalla |
+| **Guía del cajero** (solo vender y qué hacer si pasa algo) | Doc del dueño: https://claude.ai/artifact/9wxKDNqSqNRxLZsGRpoH9u |
+| **Guía del encargado de turno** (apertura, durante, cierre del turno, si algo falla) | Doc del dueño: https://claude.ai/artifact/WRBCWGaSCs1j4idaqDQGN3 |
+| Guía completa (incluye la parte del organizador: red, laptop, tablets) | Doc del dueño: https://claude.ai/artifact/6Y2F3S6Suq9BpN9AJgtwRE |
+
+Si cambia una pantalla, **actualizar las guías** (textos y capturas).
 
 **Mantené `docs/plan.md` al día**: cuando termines algo o se tome una decisión, actualizalo
 en el mismo commit.
