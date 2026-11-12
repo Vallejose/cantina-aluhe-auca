@@ -5,8 +5,10 @@
  *   2. Reenvía las impresiones a la impresora térmica (IP:9100, ESC/POS),
  *      de a una y en orden, respetando los interruptores Tickets y Comandas.
  *
- * NO guarda ventas: cada caja guarda las suyas. Solo guarda su configuración
- * (interruptores e IP de la impresora) en servidor/cantina.properties.
+ * 3. Guarda una copia central de las ventas y los movimientos de caja de todas
+ *    las cajas, en servidor/datos/caja-N.jsonl (ver "Datos centrales" abajo).
+ *
+ * Su configuración (interruptores e IP de la impresora) va en servidor/cantina.properties.
  *
  * No hace falta compilar: con Java 21 se arranca así, desde la carpeta de la app:
  *     java servidor/Cantina.java
@@ -24,6 +26,19 @@
  *
  * Los resúmenes (solo totales por artículo y por medio de pago, no las ventas)
  * se guardan en servidor/cierres/ para no perderlos si se reinicia la laptop.
+ *
+ * Datos centrales (la usa js/central.js):
+ *   GET  /api/central?caja=N        lo que ya tiene la laptop de esa caja: {"caja":N,"firmas":{clave:firma}}
+ *   POST /api/central?caja=N        cuerpo = una línea por registro: clave TAB firma TAB tipo TAB json
+ *                                   (tipo = pedido | movimiento). Responde {"estado":"guardado","cantidad":n}
+ *   POST /api/central/borrar?caja=N solo cajas de prueba (8 y 9): aparta su archivo (no lo borra)
+ *   GET  /api/central/todo          todos los registros vigentes: [{caja, ultimo, registros:[{clave,firma,recibido,tipo,datos}]}]
+ *
+ * Cada caja sigue guardando todo en su navegador; esto es una copia. El archivo
+ * de cada caja solo crece: cada cambio (una venta, una anulación) es una línea
+ * nueva y vale la última línea de cada clave. Si se manda dos veces lo mismo,
+ * no pasa nada. La clave lleva el número y la fecha de creación, así que una
+ * caja que se reinstaló y repite números no pisa las ventas de antes.
  */
 
 import com.sun.net.httpserver.HttpExchange;
@@ -64,6 +79,15 @@ public class Cantina {
 	static final Object impresora = new Object(); // un solo envío a la impresora a la vez
 	static final Map<Integer, String[]> cierres = new ConcurrentHashMap<>(); // caja -> {hora, json}
 	static Path carpetaCierres;
+	static Path carpetaDatos;
+	/** caja -> clave -> línea guardada (la última de cada clave) */
+	static final Map<Integer, Map<String, Registro>> central = new ConcurrentHashMap<>();
+
+	record Registro(String clave, String firma, String recibido, String linea) { }
+
+	static final java.util.regex.Pattern CLAVE_OK = java.util.regex.Pattern.compile("[A-Za-z0-9:.|_\\-]{1,80}");
+	static final java.util.regex.Pattern ENCABEZADO = java.util.regex.Pattern.compile(
+			"^\\{\"clave\":\"([^\"]*)\",\"firma\":\"([^\"]*)\",\"recibido\":\"([^\"]*)\"");
 
 	/** Una impresión: lo que mandó una caja, ya filtrado por los interruptores */
 	static class Trabajo {
@@ -97,6 +121,8 @@ public class Cantina {
 		leerConfig();
 		carpetaCierres = carpetaApp.resolve("servidor").resolve("cierres");
 		leerCierres();
+		carpetaDatos = carpetaApp.resolve("servidor").resolve("datos");
+		leerCentral();
 
 		HttpServer servidor;
 		try {
@@ -198,6 +224,25 @@ public class Cantina {
 							lista.add("{\"caja\":" + e.getKey() + ",\"recibido\":" + texto(e.getValue()[0]) + ",\"datos\":" + e.getValue()[1] + "}"));
 					responder(x, 200, lista.toString());
 				}
+				case "/api/central" -> {
+					int caja = entero(q.get("caja"), 0);
+					if (caja < 1 || caja > 9) { responder(x, 400, error("Falta el número de caja")); return; }
+					anotarCaja(caja, desdeLaptop);
+					if (!post) { responder(x, 200, firmasJson(caja)); return; }
+					byte[] cuerpo = x.getRequestBody().readAllBytes();
+					if (cuerpo.length > 20_000_000) { responder(x, 400, error("Demasiados datos de una vez")); return; }
+					int n = guardarCentral(caja, new String(cuerpo, StandardCharsets.UTF_8));
+					if (n < 0) { responder(x, 400, error("Datos mal armados")); return; }
+					responder(x, 200, "{\"estado\":\"guardado\",\"cantidad\":" + n + "}");
+				}
+				case "/api/central/borrar" -> {
+					if (!post) { responder(x, 405, error("Usá POST")); return; }
+					int caja = entero(q.get("caja"), 0);
+					if (caja != 8 && caja != 9) { responder(x, 403, error("Solo las cajas de prueba (8 y 9)")); return; }
+					apartarCentral(caja);
+					responder(x, 200, "{\"estado\":\"borrado\"}");
+				}
+				case "/api/central/todo" -> responder(x, 200, todoJson());
 				case "/api/impresora" -> {
 					if (!post) { responder(x, 405, error("Usá POST")); return; }
 					if (!desdeLaptop) { responder(x, 403, error("Se cambia desde la laptop")); return; }
@@ -331,6 +376,113 @@ public class Cantina {
 		c.numero = numero;
 		c.vistaEn = System.currentTimeMillis();
 		c.laptop = laptop;
+	}
+
+	// ------------------------------------------------------- Datos centrales
+
+	static Map<String, Registro> deCaja(int caja) {
+		return central.computeIfAbsent(caja, n -> new LinkedHashMap<>());
+	}
+
+	static Path archivoCentral(int caja) {
+		return carpetaDatos.resolve("caja-" + caja + ".jsonl");
+	}
+
+	/**
+	 * Guarda las líneas "clave TAB firma TAB tipo TAB json". Primero revisa
+	 * todas; si una está mal no guarda ninguna. Devuelve cuántas guardó, o -1.
+	 */
+	static int guardarCentral(int caja, String cuerpo) throws IOException {
+		String recibido = java.time.OffsetDateTime.now().withNano(0).toString();
+		List<Registro> nuevos = new ArrayList<>();
+		for (String renglon : cuerpo.split("\n")) {
+			if (renglon.isBlank()) continue;
+			String[] p = renglon.split("\t", 4);
+			if (p.length != 4) return -1;
+			String clave = p[0], firma = p[1], tipo = p[2], json = p[3].trim();
+			if (!CLAVE_OK.matcher(clave).matches() || !CLAVE_OK.matcher(firma).matches()) return -1;
+			if (!tipo.equals("pedido") && !tipo.equals("movimiento")) return -1;
+			if (!json.startsWith("{") || !json.endsWith("}") || json.contains("\n")) return -1;
+			String linea = "{\"clave\":" + texto(clave) + ",\"firma\":" + texto(firma) + ",\"recibido\":" + texto(recibido)
+					+ ",\"tipo\":" + texto(tipo) + ",\"datos\":" + json + "}";
+			nuevos.add(new Registro(clave, firma, recibido, linea));
+		}
+		if (nuevos.isEmpty()) return 0;
+		Map<String, Registro> mapa = deCaja(caja);
+		synchronized (mapa) {
+			Files.createDirectories(carpetaDatos);
+			StringBuilder texto = new StringBuilder();
+			for (Registro r : nuevos) texto.append(r.linea()).append('\n');
+			// Primero al disco: si falla, la caja no lo da por guardado y lo vuelve a mandar
+			Files.writeString(archivoCentral(caja), texto, StandardCharsets.UTF_8,
+					StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+			for (Registro r : nuevos) mapa.put(r.clave(), r);
+		}
+		System.out.println(hora() + "  Caja " + caja + " · " + nuevos.size() + (nuevos.size() == 1 ? " cambio guardado" : " cambios guardados") + " en la laptop");
+		return nuevos.size();
+	}
+
+	/** Al arrancar: lee los archivos de servidor/datos/ (vale la última línea de cada clave) */
+	static void leerCentral() {
+		for (int caja = 1; caja <= 9; caja++) {
+			Path archivo = archivoCentral(caja);
+			if (!Files.exists(archivo)) continue;
+			Map<String, Registro> mapa = deCaja(caja);
+			int malas = 0;
+			try {
+				for (String linea : Files.readAllLines(archivo, StandardCharsets.UTF_8)) {
+					if (linea.isBlank()) continue;
+					var m = ENCABEZADO.matcher(linea);
+					if (!m.find() || !linea.endsWith("}")) { malas++; continue; } // p. ej. una línea cortada por un apagón
+					mapa.put(m.group(1), new Registro(m.group(1), m.group(2), m.group(3), linea));
+				}
+			} catch (IOException e) {
+				System.out.println("No se pudo leer " + archivo + ": " + e.getMessage());
+			}
+			if (malas > 0) System.out.println("  " + archivo.getFileName() + ": " + malas + " línea(s) incompleta(s), se saltean");
+		}
+	}
+
+	/** Cajas de prueba: el archivo se renombra (queda como respaldo) y la laptop se olvida de esa caja */
+	static void apartarCentral(int caja) throws IOException {
+		Map<String, Registro> mapa = deCaja(caja);
+		synchronized (mapa) {
+			Path archivo = archivoCentral(caja);
+			if (Files.exists(archivo)) {
+				String sello = java.time.LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"));
+				Files.move(archivo, carpetaDatos.resolve("caja-" + caja + "-reseteada-" + sello + ".jsonl"));
+			}
+			mapa.clear();
+		}
+		System.out.println(hora() + "  Caja " + caja + " (prueba) · reseteada también en la laptop");
+	}
+
+	static String firmasJson(int caja) {
+		Map<String, Registro> mapa = deCaja(caja);
+		StringJoiner j = new StringJoiner(",", "{", "}");
+		synchronized (mapa) {
+			for (Registro r : mapa.values()) j.add(texto(r.clave()) + ":" + texto(r.firma()));
+		}
+		return "{\"caja\":" + caja + ",\"firmas\":" + j + "}";
+	}
+
+	static String todoJson() {
+		StringJoiner lista = new StringJoiner(",", "[", "]");
+		for (int caja = 1; caja <= 9; caja++) {
+			Map<String, Registro> mapa = central.get(caja);
+			if (mapa == null) continue;
+			StringJoiner registros = new StringJoiner(",", "[", "]");
+			String ultimo = "";
+			synchronized (mapa) {
+				if (mapa.isEmpty()) continue;
+				for (Registro r : mapa.values()) {
+					registros.add(r.linea());
+					if (r.recibido().compareTo(ultimo) > 0) ultimo = r.recibido();
+				}
+			}
+			lista.add("{\"caja\":" + caja + ",\"ultimo\":" + texto(ultimo) + ",\"registros\":" + registros + "}");
+		}
+		return lista.toString();
 	}
 
 	// ----------------------------------------------------------------- JSON

@@ -45,13 +45,19 @@ Es una PWA: funciona en Windows y Android, se instala desde el navegador y
 **Qué hace el servidor** (`servidor/Cantina.java`, Java 21, no hay que compilar): sirve la app,
 y manda los tickets y las comandas a la impresora (`IP:9100`, ESC/POS, papel de 80 mm), de a uno y en orden.
 Los interruptores **Tickets** y **Comandas** se cambian solo desde la laptop, valen para todas las cajas
-y quedan guardados en `servidor/cantina.properties`. **No guarda ventas**: cada caja guarda las suyas.
+y quedan guardados en `servidor/cantina.properties`.
+
+**Copia central de las ventas:** cada caja guarda sus ventas en su navegador y, además, le pasa sola
+una copia a la laptop (al vender, al anular, al cargar un movimiento y cada 15 segundos). La laptop las guarda
+en `servidor/datos/caja-N.jsonl`, un archivo por caja. Si se corta la red, la caja sigue vendiendo y pasa lo que
+falte cuando vuelve. Al pie del menú se ve cómo está: *Ventas copiadas en la laptop* o *N cambios sin pasar*.
+Al terminar el evento, conviene copiar la carpeta `servidor/datos/` a un pendrive.
 
 Si la impresión falla, la venta ya está guardada: se puede *Reintentar* o *Seguir sin imprimir*.
 Desde **Pedidos** se reimprime el ticket o la comanda de cualquier pedido.
 
-**Al final del día:** cada caja imprime su resumen desde **Cierre** (por artículo y por medio de pago) y toca
-**Mandar a la laptop**. En la laptop, **Cierre › Todas las cajas** suma todo e imprime el total.
+**Al final del día:** cada caja imprime su resumen desde **Cierre** (por artículo y por medio de pago).
+En la laptop, **Cierre › Todas las cajas** suma todas las cajas con la copia central e imprime el total.
 
 > Los datos quedan guardados en el navegador **para esa dirección exacta**.
 > Abrila siempre con la misma dirección y el mismo navegador, o vas a ver la app vacía.

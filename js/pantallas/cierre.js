@@ -64,11 +64,13 @@ const PantallaCierre = {
 	async dibujarResumen(panel, k, laptop) {
 		const d = Util.dinero;
 		const servidor = Impresion.hayServidor();
-		const envio = await Resumen.ultimoEnvio();
-		const estadoEnvio = envio
-			? `<span class="enviado">✓ Enviado a las ${Util.hora(envio.fecha)} (${envio.pedidos} ${envio.pedidos === 1 ? 'pedido' : 'pedidos'})</span>
-				<small class="suave">Si vendés algo después, mandalo de nuevo: reemplaza al anterior.</small>`
-			: '<small class="suave">Al final del día, para que la laptop sume todas las cajas.</small>';
+		// Las ventas pasan solas a la laptop (js/central.js); acá se ve cómo está la copia
+		if (!laptop && servidor) await Central.sincronizar();
+		const copia = Central.estado;
+		const estadoCopia = copia.conectada
+			? `<span class="enviado">✓ Todo copiado en la laptop (${Util.hora(copia.ultimo)})</span>
+				<small class="suave">Las ventas pasan solas: la laptop suma todas las cajas.</small>`
+			: `<small class="suave">${copia.pendientes ? `${copia.pendientes} ${copia.pendientes === 1 ? 'cambio' : 'cambios'} sin pasar. ` : ''}Se pasan solos cuando vuelve la conexión con la laptop.</small>`;
 		panel.innerHTML = `
 			<div class="fin-del-dia">
 				<div class="tarjeta">
@@ -80,8 +82,8 @@ const PantallaCierre = {
 					<h2>Total de todas las cajas</h2>
 					${laptop
 						? `<button id="ver-cajas" class="oscuro grande">Ver todas las cajas</button>
-							<small class="suave">Esta laptop se suma sola. Las tablets mandan lo suyo desde su Cierre.</small>`
-						: `<button id="mandar" class="oscuro grande" ${servidor && k.pedidosValidos ? '' : 'disabled'}>Mandar a la laptop</button>${estadoEnvio}`}
+							<small class="suave">Las ventas de cada caja pasan solas a esta laptop.</small>`
+						: `<button id="pasar" class="oscuro grande" ${servidor ? '' : 'disabled'}>Pasar a la laptop ahora</button>${estadoCopia}`}
 				</div>
 			</div>
 			${servidor ? '' : '<p class="ayuda">Esta caja no está conectada a la laptop: no se puede imprimir ni mandar.</p>'}
@@ -145,11 +147,12 @@ const PantallaCierre = {
 				k.desdeNumero == null ? 'Sin pedidos' : k.desdeNumero === k.hastaNumero ? `Pedido ${k.desdeNumero}` : `Pedidos ${k.desdeNumero} a ${k.hastaNumero}`));
 			this.avisarImpresion(r, 'Resumen impreso');
 		};
-		const mandar = panel.querySelector('#mandar');
-		if (mandar) mandar.onclick = async () => {
-			const r = await this.conEspera(mandar, () => Resumen.mandar(Resumen.deCaja(k)));
-			if (r.estado === 'recibido') { Util.avisar('La laptop recibió el resumen'); this.dibujarResumen(panel, k, laptop); }
-			else Util.avisar(r.error || 'No se pudo mandar', 'error');
+		const pasar = panel.querySelector('#pasar');
+		if (pasar) pasar.onclick = async () => {
+			await this.conEspera(pasar, () => Central.sincronizar());
+			if (Central.estado.conectada) Util.avisar('Todo copiado en la laptop');
+			else Util.avisar(Central.estado.error || 'No hay conexión con la laptop', 'error');
+			this.dibujarResumen(panel, k, laptop);
 		};
 		const ver = panel.querySelector('#ver-cajas');
 		if (ver) ver.onclick = () => document.getElementById('tab-cajas').click();
@@ -174,14 +177,26 @@ const PantallaCierre = {
 
 	async dibujarCajas(panel, k) {
 		const propio = Resumen.deCaja(k);
+		const prueba = !!k.prueba;
 		// Las cajas de prueba se suman solo entre ellas, y las de venta solo entre ellas
-		const recibidos = (await Resumen.recibidos())
-			.filter(x => x.caja !== k.equipo && !!x.datos.prueba === !!k.prueba);
-		const conectadas = (Impresion.estado?.cajas || [])
-			.map(c => c.caja)
-			.filter(n => n !== k.equipo && Datos.esPrueba(n) === !!k.prueba && !recibidos.some(x => x.caja === n));
+		const mismaClase = n => n !== k.equipo && Datos.esPrueba(n) === prueba;
+		await Impresion.consultar();
+		const enLinea = n => (Impresion.estado?.cajas || []).some(c => c.caja === n && c.haceSeg < 30);
 
-		const total = Resumen.combinar([propio, ...recibidos.map(x => x.datos)]);
+		// 1. La copia de cada caja que tiene la laptop (servidor/datos/)
+		const copias = (await Central.todo()).filter(c => mismaClase(c.caja)).map(c => ({
+			caja: c.caja, ultimo: c.ultimo, enLinea: enLinea(c.caja),
+			datos: Resumen.deCaja(Datos.cierreDe(c.pedidos, c.movimientos, { equipo: c.caja, prueba })),
+		}));
+		// 2. Cajas sin copia que mandaron su resumen a mano (como antes de la copia central)
+		const aMano = (await Resumen.recibidos())
+			.filter(x => mismaClase(x.caja) && !!x.datos.prueba === prueba && !copias.some(c => c.caja === x.caja));
+		// 3. Conectadas que todavía no tienen nada
+		const vacias = (Impresion.estado?.cajas || []).map(c => c.caja)
+			.filter(n => mismaClase(n) && !copias.some(c => c.caja === n) && !aMano.some(x => x.caja === n));
+		const desconectadas = copias.filter(c => !c.enLinea).map(c => c.caja);
+
+		const total = Resumen.combinar([propio, ...copias.map(x => x.datos), ...aMano.map(x => x.datos)]);
 		const o = Resumen.ordenado(total);
 		const nombresCajas = total.cajas.length === 1 ? `Caja ${total.cajas[0]}`
 			: 'Cajas ' + total.cajas.slice(0, -1).join(', ') + ' y ' + total.cajas.at(-1);
@@ -190,11 +205,12 @@ const PantallaCierre = {
 			<div class="tarjeta caja-conectada ${falta ? 'sin-senal' : ''}"><b>Caja ${n}</b><span>${texto}</span></div>`;
 
 		panel.innerHTML = `
-			<p class="ayuda sin-margen">Cada tablet manda lo suyo desde su Cierre con <b>Mandar a la laptop</b>. Esta laptop se suma sola.</p>
+			<p class="ayuda sin-margen">Las ventas de cada caja pasan solas a esta laptop. Tocá <b>Actualizar</b> para ver lo último.</p>
 			<div class="grilla-cajas" style="margin: 14px 0">
 				${tarjetaCaja(k.equipo, 'Esta laptop · al día')}
-				${recibidos.map(x => tarjetaCaja(x.caja, `Recibida ${x.recibido} · ${x.datos.pedidos} pedidos`)).join('')}
-				${conectadas.map(n => tarjetaCaja(n, 'Conectada, no mandó', true)).join('')}
+				${copias.map(x => tarjetaCaja(x.caja, `${x.enLinea ? 'Al día' : 'Sin conexión · copia de las ' + Util.hora(x.ultimo)} · ${x.datos.pedidos} pedidos`, !x.enLinea)).join('')}
+				${aMano.map(x => tarjetaCaja(x.caja, `Resumen recibido ${x.recibido} · ${x.datos.pedidos} pedidos`)).join('')}
+				${vacias.map(n => tarjetaCaja(n, 'Conectada · sin ventas todavía')).join('')}
 			</div>
 			<div class="indicadores">
 				<div class="indicador destacado"><span>Total recaudado</span><b>${Util.dinero(o.totalMonto)}</b><small>${nombresCajas}</small></div>
@@ -204,7 +220,7 @@ const PantallaCierre = {
 				<button id="imprimir-total" class="principal grande" ${Impresion.hayServidor() ? '' : 'disabled'}>Imprimir total de las cajas</button>
 				<button id="actualizar">Actualizar</button>
 			</div>
-			${conectadas.length ? `<p class="alerta" style="max-width: 640px">Falta${conectadas.length > 1 ? 'n' : ''} la${conectadas.length > 1 ? 's' : ''} caja${conectadas.length > 1 ? 's' : ''} ${conectadas.join(', ')}: si imprimís ahora, no ${conectadas.length > 1 ? 'las' : 'la'} incluye.</p>` : ''}
+			${desconectadas.length ? `<p class="alerta" style="max-width: 640px">${desconectadas.length > 1 ? 'Las cajas' : 'La caja'} ${desconectadas.join(', ')} no ${desconectadas.length > 1 ? 'están conectadas' : 'está conectada'}: el total incluye lo que ${desconectadas.length > 1 ? 'pasaron' : 'pasó'} hasta su última copia.</p>` : ''}
 			<div class="columnas" style="margin-top: 16px">
 				<section class="ancho">
 					<h2 class="subtitulo">Por artículo</h2>

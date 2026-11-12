@@ -37,6 +37,9 @@ const App = {
 
 		// Estado de la impresora de la laptop, cada 5 segundos
 		Impresion.iniciar();
+
+		// Copia de las ventas y movimientos en la laptop, cada 15 segundos y después de cada cambio
+		Central.iniciar();
 	},
 
 	async mostrar() {
@@ -81,8 +84,10 @@ const App = {
 				<summary><span class="icono">🛠️</span><span>Ajustes</span></summary>
 				${MENU_AJUSTES.map(enlace).join('')}
 			</details>
-			<div id="indicador-impresora" class="indicador-impresora"></div>`;
+			<div id="indicador-impresora" class="indicador-impresora"></div>
+			<div id="indicador-central" class="indicador-central"></div>`;
 		Impresion.dibujarIndicador();
+		Central.dibujarIndicador();
 
 		// En los equipos de prueba, una franja amarilla arriba de todo
 		const franja = document.getElementById('franja-prueba');

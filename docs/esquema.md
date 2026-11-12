@@ -25,9 +25,9 @@ Elegir artículos → observaciones → cobrar (un medio de pago) → **ticket +
 | 4 | Ticket y comanda | Ticket con precios para el cliente; comanda sin precios para la cocina; mismo número. Se imprimen solos; si falla, Reintentar o Seguir sin imprimir |
 | 5 | Pedidos | Lista con búsqueda y filtros, volver a ver o reimprimir ticket o comanda, anular |
 | 6 | Movimientos | Entradas y salidas de caja con comprobante numerado (se ve o se imprime), lo que debería haber en la caja |
-| 7 | Cierre › Resumen | Imprimir resumen de la caja y Mandar a la laptop; ventas, costo y ganancia; por medio de pago y por artículo; arqueo de efectivo |
+| 7 | Cierre › Resumen | Imprimir resumen de la caja; en las tablets, estado de la copia en la laptop y Pasar a la laptop ahora; ventas, costo y ganancia; por medio de pago y por artículo; arqueo de efectivo |
 | 8 | Cierre › Exportaciones | Excel con 3 pestañas, 5 tablas CSV y 2 archivos JSON |
-| 8b | Cierre › Todas las cajas | Solo en la laptop: suma lo que mandaron las tablets (artículos y medios de pago) e imprime el total |
+| 8b | Cierre › Todas las cajas | Solo en la laptop: suma la copia central de todas las cajas (artículos y medios de pago) e imprime el total |
 | 9 | Artículos | Nombre, categoría y precio (obligatorios), costo opcional; ocultar; exportar e importar la carta |
 | 10 | Medios de pago | Efectivo (calcula vuelto), otros, y sin cargo (no suma dinero) |
 | 11 | Impresión | Interruptores Tickets y Comandas (para todas las cajas, solo desde la laptop), impresora, prueba, cajas conectadas, últimas impresiones |
@@ -110,6 +110,23 @@ se comuniquen. Avisa cuando quedan pocos números.
 - **Medio de pago:** nombre y tipo (efectivo, otro, sin cargo).
 - **Pedido:** número, fecha y hora, líneas (artículo, cantidad, precio, costo, observación), total, cobrado, medio de pago, paga con, vuelto, anulado.
 - **Movimiento:** entrada (fondo) o salida (retiro) de caja, monto, motivo, quién, número de comprobante, anulado.
+
+## Copia central en la laptop
+
+Cada caja **sigue guardando todo en su navegador** (es lo que manda). Además, pasa una copia de sus
+**pedidos y movimientos** a la laptop (`js/central.js` → servidor):
+
+- **Cuándo:** al vender, anular, cargar o anular un movimiento, al restaurar un respaldo y cada 15 segundos.
+- **Qué manda:** solo lo que la laptop no tiene o cambió. La caja le pide a la laptop la "firma" de cada
+  registro que ya tiene y compara con las suyas (si se anula un pedido, su firma cambia).
+- **Dónde queda:** `servidor/datos/caja-N.jsonl`, una línea por cambio. El archivo solo crece; vale la última
+  línea de cada registro. Mandar dos veces lo mismo no duplica nada.
+- **Clave de cada registro:** tipo + número (o id) + fecha de creación. Si una caja se reinstala y repite
+  números, no pisa en la laptop las ventas de antes.
+- **Sin conexión:** la caja vende igual; al pie del menú dice cuántos cambios faltan pasar y los pasa sola cuando vuelve la red.
+- **Cajas de prueba:** al resetearlas, la laptop aparta su archivo (lo renombra a `caja-N-reseteada-….jsonl`, no lo borra).
+- **Cierre › Todas las cajas** (laptop) suma con esta copia. Si alguna caja mandó su resumen con la versión
+  anterior ("Mandar a la laptop") y no tiene copia, se usa ese resumen.
 
 ## Exportaciones (Cierre › Exportaciones)
 

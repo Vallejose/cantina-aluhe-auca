@@ -553,7 +553,12 @@ button.export-baldosa:hover .export-icono { background: #fff; }
 .chip-impresion.si { background: var(--acento); color: var(--marca); }
 .chip-impresion.no { background: rgba(255, 255, 255, .18); color: #d3dcea; text-decoration: line-through; }
 
-.punto { display: inline-block; width: 11px; height: 11px; border-radius: 50%; flex: none; }
+/* Copia en la laptop (js/central.js), debajo del indicador de la impresora */
+.indicador-central { display: flex; align-items: center; gap: 8px; padding: 8px 6px 0; font-size: .8rem; color: #d3dcea; }
+.indicador-central:empty { display: none; }
+.indicador-impresora:empty + .indicador-central { margin-top: auto; }
+
+.punto { display: inline-block; width: 11px; height: 11px; height: 11px; border-radius: 50%; flex: none; }
 .punto.verde { background: #5fd38a; }
 .punto.amarillo { background: var(--acento); }
 .punto.rojo { background: #ff6b5e; }

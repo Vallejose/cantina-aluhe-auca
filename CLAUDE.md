@@ -68,9 +68,11 @@ en el mismo commit.
   sirve la app a las tablets por la red local y reenvía las impresiones a la impresora
   (`IP:9100`, ESC/POS), de a una y en orden. Interruptores centrales en la laptop:
   Tickets Sí/No y Comandas Sí/No.
-- **Servidor simple, sin base de datos central.** Las ventas siguen guardadas en cada caja.
-  ⚠️ El servidor que además **almacena y centraliza la información de las terminales es otro
-  proyecto**: no se implementa en este repositorio.
+- **Copia central en archivos JSON** (decisión del 11/11, reemplaza a "servidor simple"): cada caja
+  sigue guardando todo en IndexedDB y además pasa sola una copia de sus **pedidos y movimientos** a la
+  laptop (`js/central.js`, API `/api/central`). El servidor la guarda en `servidor/datos/caja-N.jsonl`
+  (una línea por cambio, vale la última de cada clave). Sin base de datos ni dependencias. Detalle en
+  `docs/esquema.md` › Copia central.
 - GitHub Pages quedó **descartado** para este proyecto (se sirve desde la laptop).
 - Código: `servidor/Cantina.java` (Java 21, un solo archivo, sin compilar ni dependencias),
   `js/escpos.js` (bytes ESC/POS, PC850, 48 columnas), `js/impresion.js` (API del servidor),
@@ -79,10 +81,10 @@ en el mismo commit.
   dirección de origen: localhost). La reimpresión desde Pedidos sale aunque el interruptor esté apagado.
   Los comprobantes de **entrada y salida de caja** se imprimen solo con el botón "Imprimir" de
   Movimientos (no salen solos, no dependen de los interruptores) y no llevan firmas.
-- **Resumen del día** (`js/resumen.js`): cada caja imprime el suyo desde Cierre y lo manda a la laptop
-  ("Mandar a la laptop" → `POST /api/cierre`). El servidor guarda **solo esos totales** (por artículo y
-  por medio de pago; el último de cada caja) en `servidor/cierres/`. La laptop los suma en
-  Cierre › Todas las cajas (las de prueba solo con las de prueba). "Sin cargo" no sale en medios de pago.
+- **Resumen del día** (`js/resumen.js`): cada caja imprime el suyo desde Cierre. La laptop suma todas
+  las cajas en Cierre › Todas las cajas con la copia central (las de prueba solo con las de prueba).
+  "Mandar a la laptop" (`POST /api/cierre`, `servidor/cierres/`) ya no está en pantalla; si una caja
+  lo mandó con la versión anterior y no tiene copia, se usa ese resumen. "Sin cargo" no sale en medios de pago.
 - Ver los pasos y las decisiones en `docs/plan.md`.
 
 ## Cómo probar los cambios

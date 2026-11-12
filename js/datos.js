@@ -25,6 +25,9 @@ const Datos = (() => {
 
 	const NOMBRE_POR_DEFECTO = 'Cantina Aluhe Auca';
 
+	/** Avisa que hubo un cambio para que pase enseguida a la laptop (js/central.js) */
+	const avisarCambio = () => { if (typeof Central !== 'undefined') Central.cambio(); };
+
 	/** Equipos 1 a 7: venta real. Equipos 8 y 9: pruebas (se pueden resetear). */
 	const EQUIPOS_VENTA = [1, 2, 3, 4, 5, 6, 7];
 	const EQUIPOS_PRUEBA = [8, 9];
@@ -219,7 +222,7 @@ const Datos = (() => {
 		}
 
 		const r = rangoNumeracion(cfg.equipo);
-		return DB.operar('pedidos', 'readwrite', async (tx, fin) => {
+		const guardado = await DB.operar('pedidos', 'readwrite', async (tx, fin) => {
 			const almacen = tx.objectStore('pedidos');
 			const claves = await DB.esperar(almacen.getAllKeys());
 			const numero = claves.length ? Math.max(...claves) + 1 : r.desde;
@@ -242,6 +245,8 @@ const Datos = (() => {
 			await DB.esperar(almacen.add(pedido));
 			fin(pedido);
 		});
+		avisarCambio();
+		return guardado;
 	}
 
 	async function listarPedidos() {
@@ -258,6 +263,7 @@ const Datos = (() => {
 		pedido.anulado = true;
 		pedido.anuladoEn = new Date().toISOString();
 		await DB.guardar('pedidos', pedido);
+		avisarCambio();
 		return pedido;
 	}
 
@@ -297,6 +303,7 @@ const Datos = (() => {
 		const numerados = (await DB.todos('movimientos')).filter(m => m.comprobante).length;
 		movimiento.comprobante = `${cfg.equipo}-${String(numerados + 1).padStart(2, '0')}`;
 		movimiento.id = await DB.guardar('movimientos', movimiento);
+		avisarCambio();
 		return movimiento;
 	}
 
@@ -307,6 +314,7 @@ const Datos = (() => {
 		m.anulado = true;
 		m.anuladoEn = new Date().toISOString();
 		await DB.guardar('movimientos', m);
+		avisarCambio();
 	}
 
 	/** Efectivo que debería haber en la caja: fondo + ventas en efectivo − retiros */
@@ -341,8 +349,15 @@ const Datos = (() => {
 	 * Los pedidos anulados no cuentan para nada; se informan aparte.
 	 */
 	async function calcularCierre() {
-		const pedidos = (await DB.todos('pedidos')).sort((a, b) => a.numero - b.numero);
-		const movimientos = await DB.todos('movimientos');
+		return cierreDe(await DB.todos('pedidos'), await DB.todos('movimientos'), await configuracion());
+	}
+
+	/**
+	 * El mismo cálculo, con pedidos y movimientos que vienen de otro lado
+	 * (por ejemplo, la copia de otra caja que tiene la laptop).
+	 */
+	function cierreDe(pedidos, movimientos, cfg) {
+		pedidos = [...pedidos].sort((a, b) => a.numero - b.numero);
 		const validos = pedidos.filter(p => !p.anulado);
 		const anulados = pedidos.filter(p => p.anulado);
 
@@ -376,7 +391,6 @@ const Datos = (() => {
 			.sort((x, y) => y.ventas - x.ventas || y.cantidad - x.cantidad);
 
 		const fechas = pedidos.map(p => p.fecha).sort();
-		const cfg = await configuracion();
 		return {
 			equipo: cfg.equipo,
 			prueba: cfg.prueba,
@@ -456,6 +470,7 @@ const Datos = (() => {
 			for (const a of ALMACENES)
 				for (const objeto of r[a]) await DB.esperar(tx.objectStore(a).put(objeto));
 		});
+		avisarCambio();
 	}
 
 	const ultimoRespaldo = () => DB.leerConfig('ultimoRespaldo');
@@ -512,7 +527,7 @@ const Datos = (() => {
 		AVISO_NUMERACION, estadoNumeracion, confirmarPedido, listarPedidos, obtenerPedido, anularPedido,
 		resumenLineas, cantidadArticulos,
 		listarMovimientos, registrarMovimiento, anularMovimiento, resumenCaja,
-		calcularCierre, exportarCierre,
+		calcularCierre, cierreDe, exportarCierre,
 		exportarRespaldo, leerRespaldo, restaurarRespaldo, ultimoRespaldo,
 		exportarCarta, leerCarta, importarCarta,
 	};

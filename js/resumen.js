@@ -2,9 +2,10 @@
  * Resumen del día para imprimir: ventas por artículo (cantidad) y por medio de
  * pago (monto), con totales. Sirve para una caja o para todas las cajas juntas.
  *
- * Para el total de todas las cajas, cada tablet manda su resumen a la laptop
- * ("Mandar a la laptop" en Cierre). El servidor guarda solo estos totales (el
- * último de cada caja), no las ventas una por una. La laptop se suma sola.
+ * El total de todas las cajas se arma en la laptop con la copia central de
+ * cada caja (js/central.js). "Mandar a la laptop" (mandar, más abajo) ya no
+ * está en pantalla: queda para sumar resúmenes que alguna caja haya mandado
+ * con la versión anterior.
  */
 const Resumen = {
 

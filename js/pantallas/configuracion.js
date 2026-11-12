@@ -186,7 +186,9 @@ const PantallaConfiguracion = {
 						return false;
 					}
 					await Datos.resetearEquipoDePrueba();
-					Util.avisar(`Caja ${equipo} reseteada`);
+					// También se aparta la copia de esta caja en la laptop
+					if (await Central.borrarCajaDePrueba(equipo)) Util.avisar(`Caja ${equipo} reseteada`);
+					else Util.avisar(`Caja ${equipo} reseteada acá, pero no en la laptop (sin conexión)`, 'error');
 					App.mostrar();
 				},
 			},

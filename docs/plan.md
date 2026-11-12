@@ -36,7 +36,7 @@ Dónde estamos y qué falta. Se actualiza cada vez que se termina algo o se toma
 | 4.5 | **Impresión en la app (ESC/POS):** al cobrar se imprimen ticket, corte, comanda y corte; reimprimir ticket o comanda por separado desde Pedidos; indicador de impresora conectada; si falla, la venta se guarda y aparecen "Reintentar" o "Seguir sin imprimir" (anotar el número a mano) | ✅ |
 | 4.6 | **Interruptores centrales en la laptop:** Tickets Sí/No y Comandas Sí/No. Rigen al instante para todas las cajas, y cada caja muestra qué se está imprimiendo | ✅ Solo desde la laptop |
 
-> **Alcance del servidor en este proyecto:** es el **simple**. Sirve la app, reenvía las impresiones y guarda solo su configuración (interruptores, IP de la impresora). **No guarda ni centraliza ventas.**
+> **Alcance del servidor:** sirve la app, reenvía las impresiones, guarda su configuración y, desde el 11/11, una **copia central** de las ventas y movimientos de todas las cajas (ver etapa 4c).
 
 **Decisiones de la etapa 4 (todas tomadas):**
 - Los interruptores Tickets y Comandas valen **para todas las cajas a la vez**.
@@ -60,6 +60,19 @@ Dónde estamos y qué falta. Se actualiza cada vez que se termina algo o se toma
 | ✅ | Cierre: la tabla por artículo ya no muestra "N sin cargo" | Listo |
 | ✅ | **Resumen impreso del día** por caja (por artículo y por medio de pago, con totales) y **total de todas las cajas** en la laptop (Cierre › Todas las cajas): cada tablet usa "Mandar a la laptop" | Listo (vistas 13 y 14 del lienzo) |
 
+### Etapa 4c · Copia central en la laptop (11/11)
+
+| | Qué | Estado |
+|---|---|---|
+| ✅ | **Decisión:** la copia central se hace en este proyecto, con **archivos JSON** (sin base de datos). Recibe **ventas y movimientos** | Tomada |
+| ✅ | Cada caja pasa sola a la laptop sus pedidos y movimientos (al vender, anular, cargar un movimiento y cada 15 s). Solo manda lo que falta o cambió | Listo (`js/central.js`) |
+| ✅ | El servidor los guarda en `servidor/datos/caja-N.jsonl` y los vuelve a leer al arrancar | Listo |
+| ✅ | Al pie del menú: *Ventas copiadas en la laptop* o *N cambios sin pasar* | Listo |
+| ✅ | Cierre › Todas las cajas suma con la copia central (sin "Mandar a la laptop"); avisa qué cajas están sin conexión | Listo |
+| ✅ | Resetear una caja de prueba también aparta su copia en la laptop | Listo |
+| 🔜 | Actualizar las guías (cajero, encargado, completa): ya no hay "Mandar a la laptop" | Falta |
+| 🔜 | Probar con una tablet Android real: cortar el wifi, vender y ver que pase sola al volver | Falta |
+
 ### Etapa 5 · Sumar una caja en un minuto
 
 - **Código QR** en la laptop con la dirección de la app: la tablet nueva lo escanea y la abre.
@@ -68,10 +81,7 @@ Dónde estamos y qué falta. Se actualiza cada vez que se termina algo o se toma
 
 ### Etapa 6 · Consolidar todas las cajas en la laptop
 
-> Ya hay una parte hecha: el **total impreso** de todas las cajas (artículos y medios de pago) con "Mandar a la laptop". Falta, si se quiere, un Excel único consolidado.
-
-- Al final, cada tablet exporta su cierre. La laptop los junta y muestra **el total recaudado** (y por medio de pago) y **cuánto se vendió de cada artículo**, con un único Excel descargable.
-- Más adelante podría ser automático (cada tablet le manda su cierre a la laptop con un botón).
+> Ya está hecho: con la **copia central** (etapa 4c) la laptop suma sola todas las cajas y muestra e imprime el total recaudado, por medio de pago y por artículo. Falta, si se quiere, un **Excel único consolidado** armado con esa copia.
 
 ### Etapa 7 · Documentación ágil para los usuarios
 
@@ -99,7 +109,7 @@ Para personas jóvenes que no conocen el proyecto: poco texto, muchas imágenes,
 
 ## 🗂️ Más adelante (fuera de este evento)
 
-- **Otro proyecto: servidor con datos centralizados.** El mismo servidor de impresión, pero que además **almacene y centralice la información de todas las terminales** (ventas, movimientos, cierres). **No se implementa en este repositorio**; acá se usa el servidor simple.
+- ~~Otro proyecto: servidor con datos centralizados.~~ Se hizo acá con archivos JSON (etapa 4c). Si más adelante hace falta, se puede pasar a SQLite.
 
 - **Android en profundidad:** cómo se ejecuta la app ahí, uso sin conexión, ajuste de Chrome para tratar la dirección de la laptop como segura.
 - Comandas por sector (cocina, barra).
