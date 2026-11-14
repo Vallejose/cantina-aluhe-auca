@@ -83,12 +83,26 @@ const Util = (() => {
 			</div>`;
 		const zona = capa.querySelector('.ventana-botones');
 		const ventana = capa.querySelector('.ventana');
+		// Mientras corre una acción (por ejemplo, guardar la venta) los botones quedan
+		// apagados: así un doble toque o Enter + toque no guarda dos veces.
+		let ocupada = false;
 		botones.forEach(b => {
 			const boton = document.createElement('button');
 			boton.textContent = b.texto;
 			boton.className = b.clase || '';
 			boton.onclick = async () => {
-				const resultado = b.accion ? await b.accion(capa) : true;
+				if (ocupada) return;
+				ocupada = true;
+				const todos = [...zona.querySelectorAll('button')];
+				const antes = todos.map(x => x.disabled);
+				todos.forEach(x => { x.disabled = true; });
+				let resultado;
+				try {
+					resultado = b.accion ? await b.accion(capa) : true;
+				} finally {
+					ocupada = false;
+					todos.forEach((x, i) => { x.disabled = antes[i]; });
+				}
 				// Si la acción abrió otra ventana (por ejemplo un comprobante), esa queda abierta
 				if (resultado !== false && capa.contains(ventana)) cerrarModal();
 			};

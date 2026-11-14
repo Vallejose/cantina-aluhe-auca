@@ -73,6 +73,16 @@ Dónde estamos y qué falta. Se actualiza cada vez que se termina algo o se toma
 | 🔜 | Actualizar las guías (cajero, encargado, completa): ya no hay "Mandar a la laptop" | Falta |
 | 🔜 | Probar con una tablet Android real: cortar el wifi, vender y ver que pase sola al volver | Falta |
 
+### Etapa 4d · Revisión de riesgos (11/11)
+
+Detalle en el doc del proyecto *revision-riesgos-cantina.md*.
+
+| | Qué | Estado |
+|---|---|---|
+| ✅ | **C1 · Doble toque:** las ventanas apagan sus botones mientras guardan; un doble toque (o Enter + toque) en *Confirmar y generar ticket* o en *Registrar* ya no guarda dos veces | Listo (13/11) |
+| 🔜 | C2 · Tablets: que la app abra sin la laptop (ajuste de Chrome) | Falta |
+| 🔜 | C3 · Lista "empezar limpio" antes del evento | Falta |
+
 ### Etapa 5 · Sumar una caja en un minuto
 
 - **Código QR** en la laptop con la dirección de la app: la tablet nueva lo escanea y la abre.
