@@ -111,6 +111,20 @@ Para personas jóvenes que no conocen el proyecto: poco texto, muchas imágenes,
 
 ### Etapa 8 · Ensayo general y preparación del evento
 
+#### Armar la red (13/11)
+
+Router propio **sin chip: solo red local, sin internet**. Se configura antes y va listo al evento. La app no necesita internet (no carga nada de afuera).
+
+| | Paso | Estado |
+|---|---|---|
+| 🔜 | Wifi con nombre propio y **contraseña**, solo para las cajas (no para el público) | Falta |
+| 🔜 | **IP fija** (reserva por DHCP) para la **laptop** y la **impresora**. Anotar las dos direcciones | Falta |
+| 🔜 | Impresora conectada al router **por cable**; *Ajustes › Impresión* con su IP e *Imprimir prueba* | Falta |
+| 🔜 | En la laptop, la red del router como **Privada** y Java permitido en el firewall | Falta |
+| 🔜 | Probar con una tablet: abrir la app con la IP fija de la laptop, vender e imprimir | Falta |
+| 🔜 | Pegar una etiqueta en el router con el nombre del wifi, la contraseña y la dirección de la app | Falta |
+
+
 - Ensayo con la laptop, las tablets y la impresora reales, usando las cajas de prueba 8 y 9: 15 a 20 ventas, una anulación, un retiro, exportar y consolidar. Después, resetear las cajas de prueba.
 - **Dejar todo configurado antes:** red, IP fijas, laptop y una tablet.
 - **Lista para el día:** fondo de caja en cada caja, cargadores, rollos de papel, respaldo a mitad del evento.
