@@ -3,9 +3,7 @@
  * pago (monto), con totales. Sirve para una caja o para todas las cajas juntas.
  *
  * El total de todas las cajas se arma en la laptop con la copia central de
- * cada caja (js/central.js). "Mandar a la laptop" (mandar, más abajo) ya no
- * está en pantalla: queda para sumar resúmenes que alguna caja haya mandado
- * con la versión anterior.
+ * cada caja (js/central.js).
  */
 const Resumen = {
 
@@ -62,39 +60,5 @@ const Resumen = {
 		const cfg = await Datos.configuracion();
 		return Impresion.enviar([{ tipo: 'resumen', bytes: EscPos.resumen(r, cfg, titulo, detalle) }],
 			{ caja: cfg.equipo, que: titulo.charAt(0) + titulo.slice(1).toLowerCase() });
-	},
-
-	// --------------------------------------------------- Con la laptop
-
-	async mandar(r) {
-		try {
-			const resp = await fetch(`api/cierre?caja=${r.cajas[0]}`, {
-				method: 'POST', cache: 'no-store',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(r),
-			});
-			// 404: la laptop sigue con el servidor de antes (no se reinició después de actualizar)
-			if (resp.status === 404)
-				return { estado: 'error', error: 'La laptop tiene el servidor viejo: cerrá la ventana negra y abrí iniciar-cantina.bat de nuevo' };
-			const datos = await resp.json();
-			if (resp.ok) await DB.guardarConfig('ultimoEnvio', { fecha: r.enviado, pedidos: r.pedidos });
-			return datos;
-		} catch {
-			return { estado: 'error', error: 'No hay conexión con la laptop' };
-		}
-	},
-
-	ultimoEnvio() {
-		return DB.leerConfig('ultimoEnvio');
-	},
-
-	/** Lo que mandaron las cajas: [{ caja, recibido, datos }] */
-	async recibidos() {
-		try {
-			const r = await fetch('api/cierres', { cache: 'no-store' });
-			return r.ok ? await r.json() : [];
-		} catch {
-			return [];
-		}
 	},
 };

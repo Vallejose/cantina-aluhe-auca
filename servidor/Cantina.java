@@ -21,12 +21,6 @@
  *   POST /api/reintentar?id=N       vuelve a mandar una impresión que no salió
  *   POST /api/interruptores?tickets=1&comandas=0   solo desde la laptop
  *   POST /api/impresora?ip=…&puerto=9100           solo desde la laptop
- *   POST /api/cierre?caja=N         cuerpo = resumen del día de esa caja (JSON); reemplaza al anterior
- *   GET  /api/cierres               los resúmenes recibidos: [{caja, recibido, datos}]
- *
- * Los resúmenes (solo totales por artículo y por medio de pago, no las ventas)
- * se guardan en servidor/cierres/ para no perderlos si se reinicia la laptop.
- *
  * Datos centrales (la usa js/central.js):
  *   GET  /api/central?caja=N        lo que ya tiene la laptop de esa caja: {"caja":N,"firmas":{clave:firma}}
  *   POST /api/central?caja=N        cuerpo = una línea por registro: clave TAB firma TAB tipo TAB json
@@ -77,8 +71,6 @@ public class Cantina {
 	static final Deque<Trabajo> ultimas = new ConcurrentLinkedDeque<>();
 	static final Map<Integer, Caja> cajas = new ConcurrentHashMap<>();
 	static final Object impresora = new Object(); // un solo envío a la impresora a la vez
-	static final Map<Integer, String[]> cierres = new ConcurrentHashMap<>(); // caja -> {hora, json}
-	static Path carpetaCierres;
 	static Path carpetaDatos;
 	/** caja -> clave -> línea guardada (la última de cada clave) */
 	static final Map<Integer, Map<String, Registro>> central = new ConcurrentHashMap<>();
@@ -115,12 +107,14 @@ public class Cantina {
 			if (args[i].equals("--puerto") && i + 1 < args.length) puerto = Integer.parseInt(args[++i]);
 			if (args[i].equals("--sin-navegador")) abrirNavegador = false;
 		}
+		if (Arrays.asList(args).contains("--empezar-limpio")) {
+			empezarLimpio();
+			return;
+		}
 
 		carpetaApp = buscarCarpetaApp();
 		archivoConfig = carpetaApp.resolve("servidor").resolve("cantina.properties");
 		leerConfig();
-		carpetaCierres = carpetaApp.resolve("servidor").resolve("cierres");
-		leerCierres();
 		carpetaDatos = carpetaApp.resolve("servidor").resolve("datos");
 		leerCentral();
 
@@ -196,33 +190,6 @@ public class Cantina {
 					guardarConfig();
 					System.out.println(hora() + "  Tickets " + (tickets ? "SÍ" : "NO") + " · Comandas " + (comandas ? "SÍ" : "NO"));
 					responder(x, 200, estadoJson(true));
-				}
-				case "/api/cierre" -> {
-					if (!post) { responder(x, 405, error("Usá POST")); return; }
-					int caja = entero(q.get("caja"), 0);
-					byte[] cuerpo = x.getRequestBody().readAllBytes();
-					String json = new String(cuerpo, StandardCharsets.UTF_8).trim();
-					if (caja < 1 || caja > 9 || cuerpo.length > 2_000_000 || !json.startsWith("{") || !json.contains("\"cantina-resumen\"")) {
-						responder(x, 400, error("Resumen mal armado"));
-						return;
-					}
-					anotarCaja(caja, desdeLaptop);
-					String hora = hora();
-					cierres.put(caja, new String[] { hora, json });
-					try {
-						Files.createDirectories(carpetaCierres);
-						Files.writeString(carpetaCierres.resolve("caja-" + caja + ".json"), json, StandardCharsets.UTF_8);
-					} catch (IOException e) {
-						System.out.println("No se pudo guardar el resumen de la caja " + caja + ": " + e.getMessage());
-					}
-					System.out.println(hora + "  Caja " + caja + " · mandó su resumen del día");
-					responder(x, 200, "{\"estado\":\"recibido\",\"recibido\":" + texto(hora) + "}");
-				}
-				case "/api/cierres" -> {
-					StringJoiner lista = new StringJoiner(",", "[", "]");
-					cierres.entrySet().stream().sorted(Map.Entry.comparingByKey()).forEach(e ->
-							lista.add("{\"caja\":" + e.getKey() + ",\"recibido\":" + texto(e.getValue()[0]) + ",\"datos\":" + e.getValue()[1] + "}"));
-					responder(x, 200, lista.toString());
 				}
 				case "/api/central" -> {
 					int caja = entero(q.get("caja"), 0);
@@ -615,20 +582,6 @@ public class Cantina {
 		comandas = !"no".equals(p.getProperty("comandas", "si"));
 	}
 
-	static void leerCierres() {
-		if (!Files.isDirectory(carpetaCierres)) return;
-		for (int caja = 1; caja <= 9; caja++) {
-			Path archivo = carpetaCierres.resolve("caja-" + caja + ".json");
-			try {
-				if (!Files.exists(archivo)) continue;
-				String hora = LocalTime.ofInstant(Files.getLastModifiedTime(archivo).toInstant(), java.time.ZoneId.systemDefault()).format(HORA);
-				cierres.put(caja, new String[] { hora, Files.readString(archivo, StandardCharsets.UTF_8) });
-			} catch (IOException e) {
-				System.out.println("No se pudo leer " + archivo + ": " + e.getMessage());
-			}
-		}
-	}
-
 	static synchronized void guardarConfig() {
 		Properties p = new Properties();
 		p.setProperty("impresora.ip", ipImpresora);
@@ -666,8 +619,83 @@ public class Cantina {
 		System.out.println("   Impresora:  " + (ipImpresora.isEmpty() ? "sin configurar (Ajustes > Impresión)" : ipImpresora + ":" + puertoImpresora));
 		System.out.println("   Tickets " + (tickets ? "SÍ" : "NO") + " · Comandas " + (comandas ? "SÍ" : "NO"));
 		System.out.println();
+		// Ventas que ya tiene guardadas: si son de pruebas viejas, se suman al evento (ver empezar-limpio.bat)
+		boolean hayVentas = false;
+		for (int caja = 1; caja <= 7; caja++) {
+			Map<String, Registro> mapa = central.get(caja);
+			if (mapa == null || mapa.isEmpty()) continue;
+			if (!hayVentas) {
+				System.out.println("   Ventas ya guardadas en esta laptop:");
+				hayVentas = true;
+			}
+			long pedidos = mapa.values().stream().filter(r -> r.linea().contains("\"tipo\":\"pedido\"")).count();
+			String ultimo = mapa.values().stream().map(Registro::recibido).max(String::compareTo).orElse("");
+			System.out.println("     Caja " + caja + ": " + pedidos + " pedidos (último " + fechaCorta(ultimo) + ")");
+		}
+		if (hayVentas) {
+			System.out.println("   Si son de pruebas y el evento todavía no empezó, cerrá esta ventana");
+			System.out.println("   y abrí empezar-limpio.bat antes de vender.");
+			System.out.println();
+		}
 		System.out.println("   No cierres esta ventana mientras dure el evento.");
 		System.out.println();
+	}
+
+	/**
+	 * Antes del evento (empezar-limpio.bat): aparta las ventas guardadas en la laptop
+	 * (servidor/datos/ y los resúmenes viejos de servidor/cierres/) en
+	 * servidor/apartado-AAAAMMDD-HHMM/. No borra nada: si hiciera falta, se vuelven a copiar.
+	 * Los interruptores y la IP de la impresora quedan como estaban.
+	 */
+	static void empezarLimpio() throws IOException {
+		Path servidor = buscarCarpetaApp().resolve("servidor");
+		// Con el servidor abierto no sirve: tiene las ventas en memoria y las volvería a mostrar
+		try (ServerSocket prueba = new ServerSocket(8080)) {
+		} catch (IOException e) {
+			System.out.println();
+			System.out.println("   El servidor está abierto. Cerrá primero su ventana negra y volvé a abrir empezar-limpio.bat.");
+			return;
+		}
+		List<Path> mover = new ArrayList<>();
+		for (String carpeta : new String[] { "datos", "cierres" }) {
+			Path c = servidor.resolve(carpeta);
+			if (!Files.isDirectory(c)) continue;
+			try (var lista = Files.list(c)) {
+				lista.filter(Files::isRegularFile).forEach(mover::add);
+			}
+		}
+		System.out.println();
+		if (mover.isEmpty()) {
+			System.out.println("   No hay ventas guardadas en esta laptop: ya está limpia.");
+			return;
+		}
+		System.out.println("   Se van a apartar " + mover.size() + " archivo(s) de ventas guardadas en esta laptop:");
+		mover.forEach(p -> System.out.println("     " + servidor.relativize(p)));
+		System.out.println();
+		System.out.print("   Para seguir escribí SI y apretá Enter: ");
+		String respuesta = new BufferedReader(new InputStreamReader(System.in)).readLine();
+		if (respuesta == null || !respuesta.trim().equalsIgnoreCase("SI")) {
+			System.out.println("   No se tocó nada.");
+			return;
+		}
+		Path destino = servidor.resolve("apartado-" + java.time.LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmm")));
+		for (Path p : mover) {
+			Path d = destino.resolve(servidor.relativize(p));
+			Files.createDirectories(d.getParent());
+			Files.move(p, d);
+		}
+		System.out.println("   Listo: quedaron en " + servidor.relativize(destino) + ". La laptop empieza sin ventas.");
+		System.out.println("   Falta borrar los datos de cada tablet o navegador que vendió como caja 1 a 7 (ver la guía).");
+	}
+
+	/** "2026-11-12T21:05:33-03:00" → "12/11 21:05" (hora local) */
+	static String fechaCorta(String iso) {
+		try {
+			return java.time.OffsetDateTime.parse(iso).atZoneSameInstant(java.time.ZoneId.systemDefault())
+					.format(DateTimeFormatter.ofPattern("dd/MM HH:mm"));
+		} catch (Exception e) {
+			return iso;
+		}
 	}
 
 	static List<String> direccionesLocales() {

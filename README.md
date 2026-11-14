@@ -37,6 +37,10 @@ Es una PWA: funciona en Windows y Android, se instala desde el navegador y
 2. En **Ajustes › Impresión**, tocá *Cambiar dirección*, escribí la IP de la impresora y tocá *Imprimir prueba*.
 3. No cierres la ventana negra mientras dure el evento: ahí también se ve cada impresión.
 
+**Antes del evento, empezar limpio:** si se probó vendiendo como caja 1 a 7, cerrá la ventana negra y abrí
+**`empezar-limpio.bat`** (aparta las ventas guardadas en la laptop, no las borra). Además, en cada navegador que
+vendió como caja 1 a 7, borrá los datos del sitio. Para probar, usá siempre las cajas 8 y 9.
+
 **En cada tablet**
 
 - Abrí Chrome en la dirección que muestra la ventana negra en *"En las tablets"* (por ejemplo `http://192.168.1.10:8080`).
@@ -116,6 +120,7 @@ js/xlsx.js               generador de archivos Excel sin librerías
 sw.js                    permite abrirla sin internet
 servidor/Cantina.java    servidor de la laptop: sirve la app y reenvía las impresiones
 iniciar-cantina.bat      arranca el servidor en Windows
+empezar-limpio.bat       antes del evento: aparta las ventas de prueba guardadas en la laptop
 docs/                    esquema del programa y capturas
 borradores/              versiones guardadas que la app no usa (por ejemplo, exportaciones con filtros)
 manifest.webmanifest     nombre e ícono al instalarla

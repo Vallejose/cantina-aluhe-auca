@@ -19,3 +19,4 @@ servidor/cierres/
 
 # Copia central de las ventas de todas las cajas (datos del evento, no van al repositorio)
 servidor/datos/
+servidor/apartado-*/

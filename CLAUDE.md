@@ -83,8 +83,11 @@ en el mismo commit.
   Movimientos (no salen solos, no dependen de los interruptores) y no llevan firmas.
 - **Resumen del día** (`js/resumen.js`): cada caja imprime el suyo desde Cierre. La laptop suma todas
   las cajas en Cierre › Todas las cajas con la copia central (las de prueba solo con las de prueba).
-  "Mandar a la laptop" (`POST /api/cierre`, `servidor/cierres/`) ya no está en pantalla; si una caja
-  lo mandó con la versión anterior y no tiene copia, se usa ese resumen. "Sin cargo" no sale en medios de pago.
+  El viejo "Mandar a la laptop" (`/api/cierre`, `servidor/cierres/`) se quitó el 13/11: solo cuenta la copia
+  central. "Sin cargo" no sale en medios de pago.
+- **Empezar limpio** (`empezar-limpio.bat` → `java servidor/Cantina.java --empezar-limpio`): con el servidor
+  cerrado, aparta `servidor/datos/` y `servidor/cierres/` en `servidor/apartado-FECHA/` (no borra). Al arrancar,
+  el servidor avisa si ya tiene ventas de las cajas 1 a 7. Los datos de cada navegador se borran a mano.
 - Ver los pasos y las decisiones en `docs/plan.md`.
 
 ## Cómo probar los cambios

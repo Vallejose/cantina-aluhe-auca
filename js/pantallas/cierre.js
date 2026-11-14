@@ -188,15 +188,12 @@ const PantallaCierre = {
 			caja: c.caja, ultimo: c.ultimo, enLinea: enLinea(c.caja),
 			datos: Resumen.deCaja(Datos.cierreDe(c.pedidos, c.movimientos, { equipo: c.caja, prueba })),
 		}));
-		// 2. Cajas sin copia que mandaron su resumen a mano (como antes de la copia central)
-		const aMano = (await Resumen.recibidos())
-			.filter(x => mismaClase(x.caja) && !!x.datos.prueba === prueba && !copias.some(c => c.caja === x.caja));
-		// 3. Conectadas que todavía no tienen nada
+		// 2. Conectadas que todavía no tienen nada
 		const vacias = (Impresion.estado?.cajas || []).map(c => c.caja)
-			.filter(n => mismaClase(n) && !copias.some(c => c.caja === n) && !aMano.some(x => x.caja === n));
+			.filter(n => mismaClase(n) && !copias.some(c => c.caja === n));
 		const desconectadas = copias.filter(c => !c.enLinea).map(c => c.caja);
 
-		const total = Resumen.combinar([propio, ...copias.map(x => x.datos), ...aMano.map(x => x.datos)]);
+		const total = Resumen.combinar([propio, ...copias.map(x => x.datos)]);
 		const o = Resumen.ordenado(total);
 		const nombresCajas = total.cajas.length === 1 ? `Caja ${total.cajas[0]}`
 			: 'Cajas ' + total.cajas.slice(0, -1).join(', ') + ' y ' + total.cajas.at(-1);
@@ -209,7 +206,6 @@ const PantallaCierre = {
 			<div class="grilla-cajas" style="margin: 14px 0">
 				${tarjetaCaja(k.equipo, 'Esta laptop · al día')}
 				${copias.map(x => tarjetaCaja(x.caja, `${x.enLinea ? 'Al día' : 'Sin conexión · copia de las ' + Util.hora(x.ultimo)} · ${x.datos.pedidos} pedidos`, !x.enLinea)).join('')}
-				${aMano.map(x => tarjetaCaja(x.caja, `Resumen recibido ${x.recibido} · ${x.datos.pedidos} pedidos`)).join('')}
 				${vacias.map(n => tarjetaCaja(n, 'Conectada · sin ventas todavía')).join('')}
 			</div>
 			<div class="indicadores">

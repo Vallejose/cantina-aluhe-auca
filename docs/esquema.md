@@ -125,8 +125,9 @@ Cada caja **sigue guardando todo en su navegador** (es lo que manda). Además, p
   números, no pisa en la laptop las ventas de antes.
 - **Sin conexión:** la caja vende igual; al pie del menú dice cuántos cambios faltan pasar y los pasa sola cuando vuelve la red.
 - **Cajas de prueba:** al resetearlas, la laptop aparta su archivo (lo renombra a `caja-N-reseteada-….jsonl`, no lo borra).
-- **Cierre › Todas las cajas** (laptop) suma con esta copia. Si alguna caja mandó su resumen con la versión
-  anterior ("Mandar a la laptop") y no tiene copia, se usa ese resumen.
+- **Cierre › Todas las cajas** (laptop) suma con esta copia, y nada más.
+- **Empezar limpio:** `empezar-limpio.bat` aparta las ventas guardadas en la laptop antes del evento (no las borra).
+  Al arrancar, el servidor avisa si ya tiene ventas de las cajas 1 a 7.
 
 ## Exportaciones (Cierre › Exportaciones)
 

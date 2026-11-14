@@ -81,7 +81,7 @@ Detalle en el doc del proyecto *revision-riesgos-cantina.md*.
 |---|---|---|
 | ✅ | **C1 · Doble toque:** las ventanas apagan sus botones mientras guardan; un doble toque (o Enter + toque) en *Confirmar y generar ticket* o en *Registrar* ya no guarda dos veces | Listo (13/11) |
 | 🔜 | C2 · Tablets: que la app abra sin la laptop (ajuste de Chrome) | Falta |
-| 🔜 | C3 · Lista "empezar limpio" antes del evento | Falta |
+| ✅ | **C3 · Empezar limpio:** se quitó el respaldo viejo de "Mandar a la laptop" (`servidor/cierres/`); `empezar-limpio.bat` aparta las ventas guardadas en la laptop; al arrancar, el servidor avisa si ya tiene ventas de las cajas 1 a 7. Los datos de cada navegador se borran a mano (pasos en la guía completa) | Listo (13/11) |
 
 ### Etapa 5 · Sumar una caja en un minuto
 
