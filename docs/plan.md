@@ -70,7 +70,7 @@ Dónde estamos y qué falta. Se actualiza cada vez que se termina algo o se toma
 | ✅ | Al pie del menú: *Ventas copiadas en la laptop* o *N cambios sin pasar* | Listo |
 | ✅ | Cierre › Todas las cajas suma con la copia central (sin "Mandar a la laptop"); avisa qué cajas están sin conexión | Listo |
 | ✅ | Resetear una caja de prueba también aparta su copia en la laptop | Listo |
-| 🔜 | Actualizar las guías (cajero, encargado, completa): ya no hay "Mandar a la laptop" | Falta |
+| ✅ | Guías actualizadas: ya no hay "Mandar a la laptop"; la del encargado dice cómo revisar que todo pasó, y la completa tiene **Empezar limpio** | Listo (13/11) |
 | 🔜 | Probar con una tablet Android real: cortar el wifi, vender y ver que pase sola al volver | Falta |
 
 ### Etapa 4d · Revisión de riesgos (11/11)
